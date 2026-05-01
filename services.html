@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Services Manager - ClubAd</title>
+
+<!-- FontAwesome & Custom CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+
+<!-- Essential: PDF Generation Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+/* Base structural styles */
+body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #fff; }
+.dashboard { display: flex; }
+
+/* SIDEBAR */
+.sidebar { width: 250px; background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); height: 100vh; padding: 20px; position: fixed; z-index: 100; }
+.sidebar h2 { color: #38bdf8; }
+.sidebar a { display: block; color: #ccc; padding: 12px; margin: 10px 0; text-decoration: none; border-radius: 10px; transition: 0.3s; }
+.sidebar a:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+/* MAIN */
+.main { margin-left: 270px; padding: 20px; width: 100%; }
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;}
+
+/* FORM */
+.form-box { background: rgba(255,255,255,0.05); padding: 25px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 25px;}
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 15px; }
+input, select, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: #fff; box-sizing: border-box; }
+textarea { resize: vertical; min-height: 80px; }
+button.btn-primary { padding: 12px 20px; border: none; border-radius: 10px; background: #38bdf8; color: #000; cursor: pointer; transition: 0.3s; font-weight: bold; margin-top: 15px;}
+button.btn-primary:hover { transform: scale(1.02); background: #0ea5e9; }
+
+/* TOOLBAR (Search & Export) */
+.toolbar { display: flex; justify-content: space-between; align-items: center; gap: 15px; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05);}
+.search-box { flex: 1; max-width: 400px; position: relative;}
+.search-box input { width: 100%; padding-left: 40px; border-radius: 20px;}
+.search-box i { position: absolute; left: 15px; top: 14px; color: #94a3b8; }
+
+.btn-group { display: flex; gap: 10px; }
+button.btn-export { padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; font-weight: bold; display: flex; align-items: center; gap: 8px; color: #fff; }
+button.btn-export:hover { transform: scale(1.05); }
+.btn-csv { background: #22c55e; }
+.btn-pdf { background: #ef4444; }
+
+/* TABLE */
+.table-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; overflow-x: auto; border: 1px solid rgba(255,255,255,0.05);}
+table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+th, td { padding: 15px 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
+th { color: #94a3b8; background: rgba(0,0,0,0.2); }
+.badge-id { background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold; border: 1px solid rgba(56, 189, 248, 0.3);}
+.action-btn { margin-right: 12px; cursor: pointer; transition: 0.2s; color: #94a3b8; font-size: 16px;}
+.action-btn.fa-eye:hover { color: #22c55e; transform: scale(1.2); }
+.action-btn.fa-edit:hover { color: #38bdf8; transform: scale(1.2); }
+.action-btn.fa-trash:hover { color: #ef4444; transform: scale(1.2); }
+
+/* MODAL (View Details) */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 1000; display: none; justify-content: center; align-items: center; }
+.modal-content { background: #0f172a; border: 1px solid rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 20px; }
+.modal-header h2 { margin: 0; color: #38bdf8; }
+.close-btn { background: transparent; color: #fff; font-size: 24px; padding: 0; margin: 0; cursor: pointer; border: none; }
+.close-btn:hover { color: #ef4444; }
+
+.detail-row { margin-bottom: 15px; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; }
+.detail-label { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; display: block;}
+.detail-value { font-size: 16px; color: #fff; margin: 0; white-space: pre-wrap;}
+
+/* HIDDEN CONTAINER FOR PDF EXPORT */
+#pdfExportContainer { display: none; }
+
+@media(max-width:768px){
+    .sidebar { display:none; }
+    .main { margin-left:0; }
+    .toolbar { flex-direction: column; align-items: stretch; }
+    .search-box { max-width: 100%; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="dashboard">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <h2>ClubAd</h2>
+    <a href="index.html"><i class="fa fa-home"></i> Dashboard</a>
+    <a href="services.html"><i class="fa fa-cogs"></i> Services</a>
+    <a href="customers.html"><i class="fa fa-users"></i> Customers</a>
+    <a href="orders.html"><i class="fa fa-plus"></i> New Order</a>
+    <a href="invoice.html"><i class="fa fa-file-invoice"></i> Invoice</a>
+    <a href="reports.html"><i class="fa fa-chart-line"></i> Reports</a>
+    <a href="settings.html"><i class="fa fa-gear"></i> Settings</a>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<div class="header">
+    <h1>Services Manager</h1>
+</div>
+
+<!-- CREATE/EDIT FORM -->
+<div class="form-box">
+    <div class="form-grid">
+        <input type="hidden" id="editIndex">
+        <input type="hidden" id="serviceIdStr"> <!-- Hidden ID tracker -->
+
+        <input type="text" id="name" placeholder="Service Name (Required)">
+
+        <select id="category">
+            <option>Travel</option>
+            <option>Vahan</option>
+            <option>Certificate</option>
+            <option>Utility</option>
+            <option>Tax</option>
+            <option>Financial</option>
+            <option>Digital</option>
+        </select>
+
+        <input type="number" id="baseCost" placeholder="Base Cost (₹)">
+        <input type="number" id="serviceCharge" placeholder="Service Charge (₹)">
+        <input type="number" id="gst" placeholder="GST %">
+
+        <input type="text" id="processing" placeholder="Processing Time (e.g., 2-3 Days)">
+
+        <textarea id="documents" placeholder="Documents Required (List them clearly)"></textarea>
+        <textarea id="description" placeholder="Short Description"></textarea>
+        <textarea id="notes" placeholder="Internal Notes / Important Info"></textarea>
+
+        <input type="text" id="total" placeholder="Total Cost" readonly style="background: rgba(0,0,0,0.4); border-color: #38bdf8;">
+    </div>
+    <button class="btn-primary" onclick="saveService()"><i class="fa fa-save"></i> Save Service</button>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+    <div class="search-box">
+        <i class="fa fa-search"></i>
+        <input type="text" id="search" placeholder="Search by ID, Service Name, or Category..." onkeyup="loadServices()">
+    </div>
+    <div class="btn-group">
+        <button class="btn-export btn-csv" onclick="exportCSV()"><i class="fa fa-file-excel"></i> Excel / CSV</button>
+        <button class="btn-export btn-pdf" onclick="generatePDFCards()"><i class="fa fa-file-pdf"></i> Download PDF Catalog</button>
+    </div>
+</div>
+
+<!-- TABLE -->
+<div class="table-box">
+    <table>
+        <thead>
+            <tr>
+                <th>Service ID</th>
+                <th>Service Name</th>
+                <th>Category</th>
+                <th>Total (₹)</th>
+                <th>Processing Time</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="serviceTable"></tbody>
+    </table>
+</div>
+
+</div>
+</div>
+
+<!-- VIEW DETAILS MODAL -->
+<div id="viewModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Service Details</h2>
+            <button class="close-btn" onclick="closeViewModal()"><i class="fa fa-times"></i></button>
+        </div>
+        
+        <div class="detail-row" style="background: transparent; border: none; padding: 0;">
+             <p style="margin: 0 0 10px 0;"><span id="v_id" class="badge-id">SRV-0000</span></p>
+        </div>
+
+        <div class="detail-row">
+            <span class="detail-label">Service Name & Category</span>
+            <p class="detail-value"><strong id="v_name" style="color: #38bdf8; font-size: 18px;">-</strong> <br> <span id="v_category" style="color: #94a3b8; font-size: 14px;">-</span></p>
+        </div>
+
+        <div class="detail-row" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3);">
+            <span class="detail-label" style="color: #38bdf8;">Pricing Breakdown</span>
+            <p class="detail-value" style="font-size: 14px;">
+                Base Cost: ₹<span id="v_base">-</span><br>
+                Service Charge: ₹<span id="v_charge">-</span><br>
+                GST: <span id="v_gst">-</span>%<br>
+                <strong style="font-size: 18px; color: #fff; margin-top: 5px; display: inline-block;">Final Total: ₹<span id="v_total">-</span></strong>
+            </p>
+        </div>
+
+        <div class="detail-row">
+            <span class="detail-label">Estimated Processing Time</span>
+            <p class="detail-value" id="v_processing">-</p>
+        </div>
+
+        <div class="detail-row">
+            <span class="detail-label">Description</span>
+            <p class="detail-value" id="v_description">-</p>
+        </div>
+
+        <div class="detail-row">
+            <span class="detail-label">Required Documents</span>
+            <p class="detail-value" id="v_documents" style="color: #fbbf24;">-</p>
+        </div>
+
+        <div class="detail-row">
+            <span class="detail-label">Internal Notes</span>
+            <p class="detail-value" id="v_notes" style="font-style: italic;">-</p>
+        </div>
+    </div>
+</div>
+
+<!-- HIDDEN CONTAINER FOR PDF EXPORT -->
+<div id="pdfExportContainer"></div>
+
+<script>
+// --- AUTO-ID GENERATOR LOGIC ---
+function generateServiceId(servicesArray) {
+    if(!servicesArray || servicesArray.length === 0) return "SRV-1001";
+    
+    let maxId = 1000;
+    servicesArray.forEach(s => {
+        if(s.id && s.id.startsWith("SRV-")) {
+            let num = parseInt(s.id.split("-")[1]);
+            if(!isNaN(num) && num > maxId) maxId = num;
+        }
+    });
+    return "SRV-" + (maxId + 1);
+}
+
+// AUTO TOTAL CALCULATION
+function calculateTotal(){
+    let base = parseFloat(document.getElementById("baseCost").value) || 0;
+    let charge = parseFloat(document.getElementById("serviceCharge").value) || 0;
+    let gst = parseFloat(document.getElementById("gst").value) || 0;
+
+    let subtotal = base + charge;
+    let gstAmt = subtotal * (gst / 100);
+    let total = subtotal + gstAmt;
+
+    document.getElementById("total").value = total.toFixed(2);
+}
+
+["baseCost", "serviceCharge", "gst"].forEach(id => {
+    let el = document.getElementById(id);
+    if(el) el.addEventListener("input", calculateTotal);
+});
+
+// SAVE SERVICE
+function saveService(){
+    let services = JSON.parse(localStorage.getItem("services")) || [];
+    let nameVal = document.getElementById("name").value.trim();
+    
+    if(!nameVal) { alert("Please enter a service name."); return; }
+
+    let editIndex = document.getElementById("editIndex").value;
+    let existingId = document.getElementById("serviceIdStr").value;
+    let finalId = existingId ? existingId : generateServiceId(services);
+
+    let data = {
+        id: finalId, // The Auto-ID
+        name: nameVal,
+        category: document.getElementById("category").value,
+        description: document.getElementById("description").value,
+        documents: document.getElementById("documents").value,
+        processing: document.getElementById("processing").value,
+        baseCost: parseFloat(document.getElementById("baseCost").value) || 0,
+        serviceCharge: parseFloat(document.getElementById("serviceCharge").value) || 0,
+        gst: parseFloat(document.getElementById("gst").value) || 0,
+        total: parseFloat(document.getElementById("total").value) || 0,
+        notes: document.getElementById("notes").value
+    };
+
+    if(editIndex !== ""){ services[editIndex] = data; } 
+    else { services.push(data); }
+
+    localStorage.setItem("services", JSON.stringify(services));
+    clearForm();
+    loadServices();
+}
+
+// LOAD SERVICES
+function loadServices(){
+    let services = JSON.parse(localStorage.getItem("services")) || [];
+    let search = document.getElementById("search").value.toLowerCase();
+    let table = document.getElementById("serviceTable");
+    table.innerHTML = "";
+
+    if(services.length === 0){
+        table.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #888;">No services added yet.</td></tr>`;
+        return;
+    }
+
+    let displayArray = services.map((s, i) => ({...s, originalIndex: i})).reverse();
+
+    displayArray.forEach(s => {
+        let sId = s.id || "SRV-LEGACY";
+        let sName = s.name || ""; 
+        let sCat = s.category || "";
+        
+        if(sId.toLowerCase().includes(search) || sName.toLowerCase().includes(search) || sCat.toLowerCase().includes(search)){
+            let totalDisplay = parseFloat(s.total) || 0;
+            table.innerHTML += `
+            <tr>
+                <td><span class="badge-id">${sId}</span></td>
+                <td style="font-weight: bold; color: #fff;">${sName}</td>
+                <td><span style="background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 6px; font-size: 12px;">${sCat}</span></td>
+                <td>₹${totalDisplay.toFixed(2)}</td>
+                <td>${s.processing || "N/A"}</td>
+                <td>
+                    <i class="fa fa-eye action-btn" onclick="openViewModal(${s.originalIndex})" title="View Details"></i>
+                    <i class="fa fa-edit action-btn" onclick="editService(${s.originalIndex})" title="Edit"></i>
+                    <i class="fa fa-trash action-btn" onclick="deleteService(${s.originalIndex})" title="Delete"></i>
+                </td>
+            </tr>
+            `;
+        }
+    });
+}
+
+// EDIT SERVICE
+function editService(i){
+    let s = JSON.parse(localStorage.getItem("services"))[i];
+    document.getElementById("serviceIdStr").value = s.id || "";
+    document.getElementById("name").value = s.name || "";
+    document.getElementById("category").value = s.category || "Travel";
+    document.getElementById("description").value = s.description || "";
+    document.getElementById("documents").value = s.documents || "";
+    document.getElementById("processing").value = s.processing || "";
+    document.getElementById("baseCost").value = s.baseCost || "";
+    document.getElementById("serviceCharge").value = s.serviceCharge || "";
+    document.getElementById("gst").value = s.gst || "";
+    document.getElementById("total").value = s.total || "";
+    document.getElementById("notes").value = s.notes || "";
+    document.getElementById("editIndex").value = i;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// DELETE SERVICE
+function deleteService(i){
+    if(confirm("Are you sure you want to delete this service?")) {
+        let services = JSON.parse(localStorage.getItem("services"));
+        services.splice(i,1);
+        localStorage.setItem("services", JSON.stringify(services));
+        loadServices();
+    }
+}
+
+// CLEAR FORM
+function clearForm(){
+    document.querySelectorAll(".form-box input[type='text'], .form-box input[type='number'], .form-box textarea").forEach(e => e.value = "");
+    document.getElementById("category").selectedIndex = 0;
+    document.getElementById("editIndex").value = "";
+    document.getElementById("serviceIdStr").value = "";
+    document.getElementById("total").value = "";
+}
+
+// --- VIEW MODAL ---
+function openViewModal(i){
+    let s = JSON.parse(localStorage.getItem("services"))[i];
+    document.getElementById("v_id").innerText = s.id || "SRV-LEGACY";
+    document.getElementById("v_name").innerText = s.name || "N/A";
+    document.getElementById("v_category").innerText = "Category: " + (s.category || "N/A");
+    document.getElementById("v_base").innerText = parseFloat(s.baseCost || 0).toFixed(2);
+    document.getElementById("v_charge").innerText = parseFloat(s.serviceCharge || 0).toFixed(2);
+    document.getElementById("v_gst").innerText = s.gst || "0";
+    document.getElementById("v_total").innerText = parseFloat(s.total || 0).toFixed(2);
+    document.getElementById("v_processing").innerText = s.processing || "Not Specified";
+    document.getElementById("v_description").innerText = s.description || "No description provided.";
+    document.getElementById("v_documents").innerText = s.documents || "No specific documents listed.";
+    document.getElementById("v_notes").innerText = s.notes || "No internal notes.";
+    
+    document.getElementById("viewModal").style.display = "flex";
+}
+function closeViewModal() {
+    document.getElementById("viewModal").style.display = "none";
+}
+
+// --- EXPORT TO CSV ---
+function exportCSV(){
+    let services = JSON.parse(localStorage.getItem("services")) || [];
+    if(services.length === 0) { alert("No services to export."); return; }
+
+    let csv = "\uFEFFService ID,Service Name,Category,Base Cost,Service Charge,GST %,Total Cost,Processing Time,Documents Required,Description\n";
+
+    services.forEach(s => {
+        let id = (s.id || "SRV-LEGACY");
+        let name = (s.name || "").replace(/"/g, '""');
+        let cat = (s.category || "").replace(/"/g, '""');
+        let proc = (s.processing || "").replace(/"/g, '""');
+        let docs = (s.documents || "").replace(/"/g, '""');
+        let desc = (s.description || "").replace(/"/g, '""');
+        
+        let base = parseFloat(s.baseCost) || 0;
+        let charge = parseFloat(s.serviceCharge) || 0;
+        let gst = parseFloat(s.gst) || 0;
+        let total = parseFloat(s.total) || 0;
+
+        csv += `"${id}","${name}","${cat}",${base},${charge},${gst},${total},"${proc}","${docs}","${desc}"\n`;
+    });
+
+    let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement("a");
+    a.href = url;
+    a.download = "ClubAd_Services_Catalog.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+// --- EXPORT AS PDF CARDS ---
+function generatePDFCards(){
+    let services = JSON.parse(localStorage.getItem("services")) || [];
+    if(services.length === 0) { alert("No services to export."); return; }
+    
+    let businessSettings = JSON.parse(localStorage.getItem("settings")) || {};
+    let bName = businessSettings.name || "ClubAd Travels & Online Services";
+
+    let container = document.getElementById("pdfExportContainer");
+    container.innerHTML = ""; 
+    container.style.display = "block";
+
+    let htmlString = "";
+    
+    services.forEach((s, index) => {
+        let pageBreakClass = index < services.length - 1 ? "html2pdf__page-break" : "";
+        
+        htmlString += `
+        <div class="${pageBreakClass}" style="padding: 40px; font-family: 'Segoe UI', sans-serif; background: #fff; color: #000; min-height: 1000px; box-sizing: border-box;">
+            
+            <div style="border-bottom: 2px solid #0ea5e9; padding-bottom: 20px; margin-bottom: 30px; text-align: center;">
+                <h1 style="margin: 0; color: #0f172a; font-size: 28px;">${bName}</h1>
+                <p style="margin: 5px 0 0 0; color: #64748b; font-size: 16px;">Service Catalog</p>
+            </div>
+
+            <div style="background: #f8fafc; padding: 25px; border-left: 5px solid #0ea5e9; border-radius: 8px; margin-bottom: 30px; position: relative;">
+                <span style="position: absolute; top: 20px; right: 20px; background: #e0f2fe; color: #0369a1; padding: 5px 10px; border-radius: 6px; font-size: 14px; font-weight: bold;">${s.id || "SRV-LEGACY"}</span>
+                <h2 style="margin: 0; color: #0ea5e9; font-size: 24px;">${s.name || "Unnamed Service"}</h2>
+                <span style="display: inline-block; background: #e2e8f0; color: #475569; padding: 5px 10px; border-radius: 5px; font-size: 14px; margin-top: 10px; font-weight: bold;">Category: ${s.category || "N/A"}</span>
+            </div>
+
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: #334155; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 15px;">Service Information</h3>
+                <p style="margin-bottom: 10px;"><strong>Description:</strong><br> ${s.description || "No description provided."}</p>
+                <p style="margin-bottom: 10px;"><strong>Processing Time:</strong><br> ${s.processing || "Not specified."}</p>
+                <p style="margin-bottom: 10px; color: #d97706;"><strong>Documents Required:</strong><br> <span style="white-space: pre-wrap;">${s.documents || "None specified."}</span></p>
+            </div>
+
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 25px; border-radius: 8px;">
+                <h3 style="margin: 0 0 15px 0; color: #166534;">Pricing Breakdown</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #dcfce7; color: #166534;">Base Cost</td>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #dcfce7; text-align: right; font-weight: bold; color: #166534;">₹${parseFloat(s.baseCost||0).toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #dcfce7; color: #166534;">Service Charge</td>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #dcfce7; text-align: right; font-weight: bold; color: #166534;">₹${parseFloat(s.serviceCharge||0).toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #dcfce7; color: #166534;">GST Applied</td>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #dcfce7; text-align: right; font-weight: bold; color: #166534;">${s.gst||0}%</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 15px 0 0 0; font-size: 20px; font-weight: bold; color: #14532d;">Total Cost</td>
+                        <td style="padding: 15px 0 0 0; font-size: 20px; font-weight: bold; text-align: right; color: #14532d;">₹${parseFloat(s.total||0).toFixed(2)}</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div style="text-align: center; margin-top: 50px; color: #94a3b8; font-size: 12px;">
+                Generated from ClubAd System on ${new Date().toLocaleDateString()}
+            </div>
+
+        </div>
+        `;
+    });
+
+    container.innerHTML = htmlString;
+
+    let opt = {
+        margin:       0,
+        filename:     'ClubAd_Services_Catalog.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(container).save().then(() => {
+        container.style.display = "none";
+        container.innerHTML = "";
+    });
+}
+
+// INIT
+loadServices();
+</script>
+
+</body>
+</html>

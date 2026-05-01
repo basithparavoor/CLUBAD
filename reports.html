@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reports - ClubAd</title>
+
+<!-- FontAwesome & Custom CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+
+<!-- PDF Generation Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+/* Base structural styles */
+body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #fff; }
+.dashboard { display: flex; }
+
+/* SIDEBAR */
+.sidebar { width: 250px; background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); height: 100vh; padding: 20px; position: fixed; }
+.sidebar h2 { color: #38bdf8; }
+.sidebar a { display: block; color: #ccc; padding: 12px; margin: 10px 0; text-decoration: none; border-radius: 10px; transition: 0.3s; }
+.sidebar a:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+/* MAIN */
+.main { margin-left: 270px; padding: 20px; width: 100%; }
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;}
+
+/* CARDS */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 20px; margin-top: 20px; }
+.card { background: rgba(255,255,255,0.05); padding: 25px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); }
+.card h3 { margin: 0 0 10px 0; color: #94a3b8; font-size: 16px; }
+.card p { margin: 0; font-size: 28px; font-weight: bold; color: #38bdf8; }
+
+/* TABLE */
+.table-box { margin-top: 30px; background: rgba(255,255,255,0.05); padding: 25px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); overflow-x: auto; }
+.table-box h3 { margin-top: 0; color: #fff; }
+table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
+th { color: #94a3b8; background: rgba(0,0,0,0.2); }
+.action-btn { margin-right: 10px; cursor: pointer; transition: 0.2s; color: #38bdf8; }
+.action-btn:hover { color: #fff; transform: scale(1.1); }
+
+/* BUTTONS */
+.btn-group { margin-top: 20px; display: flex; gap: 15px; }
+button { padding: 12px 20px; border: none; border-radius: 10px; background: #38bdf8; color: #000; cursor: pointer; transition: 0.3s; font-weight: bold; display: flex; align-items: center; gap: 8px;}
+button:hover { transform: scale(1.02); background: #0ea5e9; }
+.btn-pdf { background: #ef4444; color: #fff; }
+.btn-pdf:hover { background: #dc2626; }
+.btn-csv { background: #22c55e; color: #fff; }
+.btn-csv:hover { background: #16a34a; }
+
+/* MODAL STYLES */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 1000; display: none; justify-content: center; align-items: center; }
+.modal-content { background: #0f172a; border: 1px solid rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 20px; }
+.modal-header h2 { margin: 0; color: #38bdf8; }
+.close-btn { background: transparent; color: #fff; font-size: 24px; padding: 0; margin: 0; cursor: pointer; border: none; }
+.close-btn:hover { transform: scale(1.1); color: #ef4444; background: transparent;}
+
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+input, select { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #fff; box-sizing: border-box; }
+.input-group label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 5px; }
+
+@media(max-width:768px){
+    .sidebar { display:none; }
+    .main { margin-left:0; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="dashboard">
+
+<!-- SIDEBAR -->
+<div class="sidebar no-print">
+    <h2>ClubAd</h2>
+    <a href="index.html"><i class="fa fa-home"></i> Dashboard</a>
+    <a href="services.html"><i class="fa fa-cogs"></i> Services</a>
+    <a href="customers.html"><i class="fa fa-users"></i> Customers</a>
+    <a href="orders.html"><i class="fa fa-plus"></i> New Order</a>
+    <a href="invoice.html"><i class="fa fa-file-invoice"></i> Invoice</a>
+    <a href="reports.html"><i class="fa fa-chart-line"></i> Reports</a>
+    <a href="settings.html"><i class="fa fa-gear"></i> Settings</a>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<div class="header no-print">
+    <h1>Reports & Analytics</h1>
+    <div class="btn-group">
+        <button class="btn-csv" onclick="exportCSV()"><i class="fa fa-file-csv"></i> Export CSV</button>
+        <button class="btn-pdf" onclick="downloadPDF()"><i class="fa fa-file-pdf"></i> Download PDF</button>
+    </div>
+</div>
+
+<!-- PRINTABLE AREA STARTS HERE -->
+<div id="printableReport">
+    
+    <h2 style="display: none;" class="pdf-title">ClubAd - Revenue & Transaction Report</h2>
+
+    <!-- CARDS -->
+    <div class="cards">
+        <div class="card">
+            <h3>Today's Income</h3>
+            <p id="todayIncome">₹0.00</p>
+        </div>
+        <div class="card">
+            <h3>This Month</h3>
+            <p id="monthIncome">₹0.00</p>
+        </div>
+        <div class="card">
+            <h3>Total Lifetime Orders</h3>
+            <p id="totalOrders" style="color: #fff;">0</p>
+        </div>
+    </div>
+
+    <!-- SERVICE REPORT SUMMARY -->
+    <div class="table-box">
+        <h3>Service-wise Lifetime Earnings</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Service Name</th>
+                    <th>Total Revenue Generated</th>
+                </tr>
+            </thead>
+            <tbody id="serviceReport">
+                <tr><td colspan="2" style="text-align: center; color: #888;">Loading data...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- DETAILED TRANSACTIONS TABLE -->
+    <div class="table-box">
+        <h3>Detailed Transaction History</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Customer</th>
+                    <th>Service</th>
+                    <th>Total (₹)</th>
+                    <th>Advance (₹)</th>
+                    <th>Status</th>
+                    <th class="no-print">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="transactionHistory">
+                <tr><td colspan="7" style="text-align: center; color: #888;">Loading data...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+<!-- PRINTABLE AREA ENDS HERE -->
+
+</div>
+</div>
+
+<!-- EDIT TRANSACTION MODAL -->
+<div id="editModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Edit Transaction</h2>
+            <button class="close-btn" onclick="closeModal()"><i class="fa fa-times"></i></button>
+        </div>
+        
+        <input type="hidden" id="m_index">
+        
+        <div class="form-grid">
+            <div class="input-group">
+                <label>Customer Name</label>
+                <input type="text" id="m_customerName">
+            </div>
+            <div class="input-group">
+                <label>Service Name</label>
+                <input type="text" id="m_serviceName">
+            </div>
+            <div class="input-group">
+                <label>Date (YYYY-MM-DD)</label>
+                <input type="date" id="m_date">
+            </div>
+            <div class="input-group">
+                <label>Base Cost</label>
+                <input type="number" id="m_baseCost">
+            </div>
+            <div class="input-group">
+                <label>Service Charge</label>
+                <input type="number" id="m_serviceCharge">
+            </div>
+            <div class="input-group">
+                <label>GST %</label>
+                <input type="number" id="m_gst">
+            </div>
+            <div class="input-group">
+                <label>Extra Charges</label>
+                <input type="number" id="m_extra">
+            </div>
+            <div class="input-group">
+                <label>Discount</label>
+                <input type="number" id="m_discount">
+            </div>
+            <div class="input-group">
+                <label>Total (Auto-calculated)</label>
+                <input type="text" id="m_total" readonly style="background: rgba(0,0,0,0.3);">
+            </div>
+            <div class="input-group">
+                <label>Advance Paid</label>
+                <input type="number" id="m_advance">
+            </div>
+            <div class="input-group">
+                <label>Payment Mode</label>
+                <select id="m_paymentMode">
+                    <option>Cash</option>
+                    <option>UPI</option>
+                    <option>Bank</option>
+                </select>
+            </div>
+        </div>
+        
+        <button onclick="saveEdit()" style="margin-top: 20px; width: 100%; justify-content: center;">Save Changes</button>
+    </div>
+</div>
+
+<script>
+// 1. LOAD REPORT DATA
+function loadReports(){
+    let orders = JSON.parse(localStorage.getItem("orders")) || [];
+
+    let today = new Date();
+    let todayStr = today.toDateString();
+    let thisMonth = today.getMonth();
+    let thisYear = today.getFullYear();
+
+    let todayTotal = 0;
+    let monthTotal = 0;
+    let serviceMap = {};
+
+    let histTable = document.getElementById("transactionHistory");
+    histTable.innerHTML = "";
+
+    if(orders.length === 0) {
+        histTable.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #888;">No transactions recorded yet.</td></tr>`;
+        document.getElementById("serviceReport").innerHTML = `<tr><td colspan="2" style="text-align: center; color: #888;">No orders recorded yet.</td></tr>`;
+        return;
+    }
+
+    orders.forEach((o, index) => {
+        let total = parseFloat(o.total) || 0;
+        let advance = parseFloat(o.advance) || 0;
+        let balance = total - advance;
+        let status = balance <= 0 ? '<span style="color: #22c55e;">Paid</span>' : '<span style="color: #f97316;">Pending</span>';
+        
+        // Safely parse date
+        let dateStr = "N/A";
+        if(o.date) {
+            let d = new Date(o.date);
+            dateStr = d.toLocaleDateString();
+            
+            // Summaries
+            if(d.toDateString() === todayStr) todayTotal += total;
+            if(d.getMonth() === thisMonth && d.getFullYear() === thisYear) monthTotal += total;
+        }
+
+        // Aggregate by Service
+        let sName = o.serviceName || "Unknown Service";
+        if(!serviceMap[sName]) serviceMap[sName] = 0;
+        serviceMap[sName] += total;
+
+        // Populate Transaction History Table (Reverse Chronological)
+        let rowHtml = `
+            <tr>
+                <td>${dateStr}</td>
+                <td>${o.customerName || "-"}</td>
+                <td>${o.serviceName || "-"}</td>
+                <td>${total.toFixed(2)}</td>
+                <td>${advance.toFixed(2)}</td>
+                <td>${status}</td>
+                <td class="no-print">
+                    <i class="fa fa-edit action-btn" title="Edit" onclick="openModal(${index})"></i>
+                    <i class="fa fa-trash action-btn" title="Delete" style="color: #ef4444;" onclick="deleteEntry(${index})"></i>
+                </td>
+            </tr>
+        `;
+        histTable.insertAdjacentHTML('afterbegin', rowHtml); // Puts newest at top
+    });
+
+    document.getElementById("todayIncome").innerText = "₹" + todayTotal.toFixed(2);
+    document.getElementById("monthIncome").innerText = "₹" + monthTotal.toFixed(2);
+    document.getElementById("totalOrders").innerText = orders.length;
+
+    // POPULATE SERVICE SUMMARY TABLE
+    let sTable = document.getElementById("serviceReport");
+    sTable.innerHTML = "";
+    let serviceNames = Object.keys(serviceMap).sort((a,b) => serviceMap[b] - serviceMap[a]);
+
+    serviceNames.forEach(service => {
+        sTable.innerHTML += `<tr><td>${service}</td><td>₹${serviceMap[service].toFixed(2)}</td></tr>`;
+    });
+}
+
+// 2. DELETE ENTRY
+function deleteEntry(index) {
+    if(confirm("Are you sure you want to permanently delete this transaction? This will affect your reports and cannot be undone.")) {
+        let orders = JSON.parse(localStorage.getItem("orders")) || [];
+        orders.splice(index, 1);
+        localStorage.setItem("orders", JSON.stringify(orders));
+        loadReports();
+    }
+}
+
+// 3. EDIT MODAL LOGIC
+function openModal(index) {
+    let orders = JSON.parse(localStorage.getItem("orders")) || [];
+    let o = orders[index];
+
+    document.getElementById("m_index").value = index;
+    document.getElementById("m_customerName").value = o.customerName || "";
+    document.getElementById("m_serviceName").value = o.serviceName || "";
+    
+    // Format Date for Input type="date"
+    let d = new Date(o.date);
+    document.getElementById("m_date").value = !isNaN(d.getTime()) ? d.toISOString().split('T')[0] : "";
+
+    document.getElementById("m_baseCost").value = o.baseCost || 0;
+    document.getElementById("m_serviceCharge").value = o.serviceCharge || 0;
+    document.getElementById("m_gst").value = o.gst || 0;
+    document.getElementById("m_extra").value = o.extra || 0;
+    document.getElementById("m_discount").value = o.discount || 0;
+    document.getElementById("m_advance").value = o.advance || 0;
+    document.getElementById("m_paymentMode").value = o.paymentMode || "Cash";
+    
+    calcModalTotal();
+    document.getElementById("editModal").style.display = "flex";
+}
+
+function closeModal() {
+    document.getElementById("editModal").style.display = "none";
+}
+
+function calcModalTotal() {
+    let base = parseFloat(document.getElementById("m_baseCost").value) || 0;
+    let charge = parseFloat(document.getElementById("m_serviceCharge").value) || 0;
+    let gstVal = parseFloat(document.getElementById("m_gst").value) || 0;
+    let extraVal = parseFloat(document.getElementById("m_extra").value) || 0;
+    let discountVal = parseFloat(document.getElementById("m_discount").value) || 0;
+
+    let subtotal = base + charge + extraVal;
+    let gstAmt = subtotal * (gstVal / 100);
+    let total = subtotal + gstAmt - discountVal;
+
+    document.getElementById("m_total").value = total.toFixed(2);
+}
+
+// Bind live calculation to modal inputs
+["m_baseCost", "m_serviceCharge", "m_gst", "m_extra", "m_discount"].forEach(id => {
+    document.getElementById(id).addEventListener("input", calcModalTotal);
+});
+
+function saveEdit() {
+    let orders = JSON.parse(localStorage.getItem("orders")) || [];
+    let index = document.getElementById("m_index").value;
+    
+    // Ensure we keep the original time, but update the date
+    let originalDate = new Date(orders[index].date);
+    let newDateInput = document.getElementById("m_date").value;
+    let finalDate = originalDate;
+    
+    if(newDateInput) {
+        let parts = newDateInput.split('-');
+        finalDate.setFullYear(parts[0], parts[1]-1, parts[2]);
+    }
+
+    orders[index] = {
+        ...orders[index], // Retain mobile number or other hidden fields
+        date: finalDate.toISOString(),
+        customerName: document.getElementById("m_customerName").value.trim(),
+        serviceName: document.getElementById("m_serviceName").value.trim(),
+        baseCost: parseFloat(document.getElementById("m_baseCost").value) || 0,
+        serviceCharge: parseFloat(document.getElementById("m_serviceCharge").value) || 0,
+        gst: parseFloat(document.getElementById("m_gst").value) || 0,
+        extra: parseFloat(document.getElementById("m_extra").value) || 0,
+        discount: parseFloat(document.getElementById("m_discount").value) || 0,
+        total: parseFloat(document.getElementById("m_total").value) || 0,
+        advance: parseFloat(document.getElementById("m_advance").value) || 0,
+        paymentMode: document.getElementById("m_paymentMode").value
+    };
+
+    localStorage.setItem("orders", JSON.stringify(orders));
+    closeModal();
+    loadReports();
+}
+
+// 4. DOWNLOAD PDF VIA HTML2PDF
+function downloadPDF() {
+    // Show hidden PDF Title
+    document.querySelector('.pdf-title').style.display = 'block';
+    
+    let element = document.getElementById('printableReport');
+    
+    let opt = {
+        margin:       10,
+        filename:     'ClubAd_Report_' + new Date().toISOString().split('T')[0] + '.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, background: '#0f172a' },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: 'avoid-all' }
+    };
+
+    // Temporarily hide elements with 'no-print' class before generation
+    let noPrintEls = document.querySelectorAll('.no-print');
+    noPrintEls.forEach(el => el.style.display = 'none');
+
+    // Generate PDF
+    html2pdf().set(opt).from(element).save().then(() => {
+        // Restore visibility after generation
+        noPrintEls.forEach(el => el.style.display = '');
+        document.querySelector('.pdf-title').style.display = 'none';
+    });
+}
+
+// 5. EXPORT CSV
+function exportCSV(){
+    let orders = JSON.parse(localStorage.getItem("orders")) || [];
+    let csv = "\uFEFFDate,Customer Name,Service,Total Amount,Advance Paid,Payment Mode\n";
+
+    orders.forEach(o => {
+        let dateStr = o.date ? new Date(o.date).toLocaleDateString() : "N/A";
+        let cName = (o.customerName || "").replace(/"/g, '""');
+        let sName = (o.serviceName || "").replace(/"/g, '""');
+        let mode = (o.paymentMode || "").replace(/"/g, '""');
+        let total = parseFloat(o.total) || 0;
+        let adv = parseFloat(o.advance) || 0;
+
+        csv += `"${dateStr}","${cName}","${sName}",${total},${adv},"${mode}"\n`;
+    });
+
+    let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement("a");
+    a.href = url;
+    a.download = "ClubAd_Revenue_Report.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+// INIT
+loadReports();
+</script>
+
+</body>
+</html>

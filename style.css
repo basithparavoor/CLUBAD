@@ -1,0 +1,300 @@
+/* =========================================
+   CLUBAD - GLOBAL DESIGN SYSTEM
+   ========================================= */
+
+/* --- 1. ROOT VARIABLES --- */
+:root {
+    --bg-dark: #020617;
+    --bg-gradient: radial-gradient(circle at top left, #0f172a, #020617);
+    
+    --card-bg: rgba(255, 255, 255, 0.03);
+    --glass: rgba(255, 255, 255, 0.06);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+
+    --primary: #38bdf8;   /* Light Blue */
+    --primary-hover: #0ea5e9;
+    
+    --accent: #f97316;    /* Orange */
+    --accent-hover: #ea580c;
+
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    
+    --success: #22c55e;
+    --danger: #ef4444;
+}
+
+/* --- 2. UNIVERSAL RESET --- */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg-gradient);
+    background-attachment: fixed;
+    color: var(--text-main);
+    line-height: 1.5;
+}
+
+/* --- 3. TYPOGRAPHY --- */
+h1, h2, h3, h4, h5, h6 {
+    margin-top: 0;
+    font-weight: 600;
+}
+
+h1 { color: #fff; font-size: 24px; margin-bottom: 20px; }
+h2 { color: var(--primary); font-size: 20px; }
+h3 { color: var(--text-muted); font-size: 16px; margin-bottom: 10px; }
+
+/* --- 4. LAYOUT COMPONENTS --- */
+.dashboard {
+    display: flex;
+    min-height: 100vh;
+}
+
+.main {
+    flex: 1;
+    margin-left: 250px;
+    padding: 30px;
+    transition: all 0.3s ease;
+}
+
+/* --- 5. SIDEBAR --- */
+.sidebar {
+    width: 250px;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: var(--glass-border);
+    height: 100vh;
+    padding: 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar h2 {
+    text-align: center;
+    font-size: 28px;
+    margin-bottom: 30px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    background: linear-gradient(to right, #38bdf8, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.sidebar a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--text-muted);
+    padding: 12px 15px;
+    margin: 5px 0;
+    text-decoration: none;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.sidebar a i {
+    width: 20px;
+    text-align: center;
+    font-size: 18px;
+}
+
+.sidebar a:hover {
+    background: var(--glass);
+    color: var(--primary);
+    transform: translateX(5px);
+}
+
+/* --- 6. CARDS & BOXES (Glassmorphism) --- */
+.card, .box, .form-box, .table-box, .chart-box, .table-container {
+    background: var(--card-bg);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: var(--glass-border);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    border-color: rgba(56, 189, 248, 0.3);
+}
+
+/* --- 7. FORMS & INPUTS --- */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(0,0,0,0.2);
+    color: var(--text-main);
+    font-size: 15px;
+    outline: none;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+input::placeholder, textarea::placeholder {
+    color: #64748b;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: var(--primary);
+    background: rgba(0,0,0,0.4);
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+}
+
+select option {
+    background: #0f172a;
+    color: #fff;
+}
+
+/* --- 8. BUTTONS --- */
+button {
+    background: linear-gradient(135deg, var(--primary), #2563eb);
+    color: #fff;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(37, 99, 235, 0.5);
+    background: linear-gradient(135deg, var(--primary-hover), #1d4ed8);
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+/* --- 9. TABLES --- */
+.table-box, .table-container {
+    overflow-x: auto; /* Prevents layout break on mobile */
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    white-space: nowrap;
+}
+
+th, td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+th {
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    background: rgba(0,0,0,0.2);
+}
+
+tr {
+    transition: background 0.2s ease;
+}
+
+tbody tr:hover {
+    background: rgba(255,255,255,0.03);
+}
+
+/* --- 10. ACTION ICONS --- */
+.action-btn {
+    color: var(--text-muted);
+    font-size: 18px;
+    margin-right: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.action-btn.fa-edit:hover { color: var(--primary); transform: scale(1.1); }
+.action-btn.fa-trash:hover { color: var(--danger); transform: scale(1.1); }
+
+/* --- 11. CUSTOM SCROLLBAR --- */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.2);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+}
+
+/* --- 12. UTILITIES & ANIMATIONS --- */
+.fade-in {
+    animation: fadeIn 0.4s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- 13. RESPONSIVE DESIGN (MOBILE) --- */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%); /* Hide sidebar smoothly */
+    }
+    
+    .main {
+        margin-left: 0;
+        padding: 15px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr; /* Stack inputs on small screens */
+    }
+
+    .dashboard {
+        flex-direction: column;
+    }
+    
+    .header, .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+}

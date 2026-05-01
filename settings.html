@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings - ClubAd</title>
+
+<!-- FontAwesome & Custom CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+
+<style>
+/* Base structural styles to ensure layout integrity */
+body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #fff; }
+.dashboard { display: flex; }
+
+/* SIDEBAR */
+.sidebar { width: 250px; background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); height: 100vh; padding: 20px; position: fixed; }
+.sidebar h2 { color: #38bdf8; }
+.sidebar a { display: block; color: #ccc; padding: 12px; margin: 10px 0; text-decoration: none; border-radius: 10px; transition: 0.3s; }
+.sidebar a:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+/* MAIN */
+.main { margin-left: 270px; padding: 20px; width: 100%; }
+
+/* BOX */
+.box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; margin-top: 20px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 15px; }
+input, textarea { width: 100%; padding: 10px; border-radius: 10px; border: none; background: rgba(255,255,255,0.08); color: #fff; box-sizing: border-box; }
+button { padding: 12px 20px; border: none; border-radius: 10px; background: #38bdf8; color: #000; cursor: pointer; transition: 0.3s; font-weight: bold; margin-top: 15px;}
+button:hover { transform: scale(1.02); }
+
+/* PREVIEW */
+.preview { margin-top: 20px; text-align: center; background: rgba(255,255,255,0.02); padding: 30px; border-radius: 15px; border: 1px dashed rgba(255,255,255,0.2); }
+.preview img { max-width: 150px; border-radius: 10px; margin-bottom: 15px; display: none; } /* Hidden by default until loaded */
+.preview h2 { margin: 0 0 10px 0; color: #38bdf8; }
+.preview p { margin: 0; color: #aaa; white-space: pre-wrap; }
+
+/* MOBILE */
+@media(max-width:768px){
+    .sidebar { display:none; }
+    .main { margin-left:0; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="dashboard">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <h2>ClubAd</h2>
+    <a href="index.html"><i class="fa fa-home"></i> Dashboard</a>
+    <a href="services.html"><i class="fa fa-cogs"></i> Services</a>
+    <a href="customers.html"><i class="fa fa-users"></i> Customers</a>
+    <a href="orders.html"><i class="fa fa-plus"></i> New Order</a>
+    <a href="invoice.html"><i class="fa fa-file-invoice"></i> Invoice</a>
+    <a href="reports.html"><i class="fa fa-chart-line"></i> Reports</a>
+    <a href="settings.html"><i class="fa fa-gear"></i> Settings</a>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<h1>Settings</h1>
+
+<div class="box">
+    <div class="grid">
+
+        <input type="text" id="name" placeholder="Business Name">
+        <input type="text" id="gst" placeholder="GST Number">
+        <input type="text" id="phone" placeholder="Phone Number">
+        <input type="email" id="email" placeholder="Email Address">
+        <input type="text" id="upi" placeholder="UPI ID (For QR Payments)">
+
+        <input type="number" id="defaultGST" placeholder="Default GST %">
+        <input type="text" id="currency" placeholder="Currency Symbol (e.g. ₹)">
+
+        <textarea id="address" placeholder="Business Address" rows="3"></textarea>
+
+        <div style="background: rgba(255,255,255,0.08); padding: 10px; border-radius: 10px;">
+            <label style="font-size: 14px; color: #aaa; display: block; margin-bottom: 5px;">Business Logo</label>
+            <input type="file" id="logo" accept="image/*" style="background: transparent; padding: 0;">
+        </div>
+
+    </div>
+
+    <button onclick="saveSettings()">Save Settings</button>
+</div>
+
+<!-- PREVIEW -->
+<div class="box preview">
+    <h3 style="color: #64748b; margin-top: 0;">Invoice Header Preview</h3>
+    <img id="logoPreview" alt="Business Logo">
+    <h2 id="previewName">Business Name</h2>
+    <p id="previewAddress">Business Address</p>
+</div>
+
+</div>
+</div>
+
+<script>
+// LOAD SETTINGS
+function loadSettings(){
+    let s = JSON.parse(localStorage.getItem("settings")) || {};
+
+    document.getElementById("name").value = s.name || "";
+    document.getElementById("gst").value = s.gst || "";
+    document.getElementById("phone").value = s.phone || "";
+    document.getElementById("email").value = s.email || "";
+    document.getElementById("upi").value = s.upi || "";
+    document.getElementById("defaultGST").value = s.defaultGST || "";
+    document.getElementById("currency").value = s.currency || "₹";
+    document.getElementById("address").value = s.address || "";
+
+    let logoImg = document.getElementById("logoPreview");
+    if(s.logo){
+        logoImg.src = s.logo;
+        logoImg.style.display = "inline-block";
+    } else {
+        logoImg.style.display = "none";
+    }
+
+    updatePreview();
+}
+
+// SAVE SETTINGS
+function saveSettings(){
+    let fileInput = document.getElementById("logo");
+    let file = fileInput.files[0];
+
+    if(file){
+        let reader = new FileReader();
+        reader.onload = function(){
+            storeSettings(reader.result);
+        };
+        reader.readAsDataURL(file);
+    } else {
+        storeSettings(null);
+    }
+}
+
+function storeSettings(logoData){
+    let old = JSON.parse(localStorage.getItem("settings")) || {};
+
+    let data = {
+        name: document.getElementById("name").value.trim(),
+        gst: document.getElementById("gst").value.trim(),
+        phone: document.getElementById("phone").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        upi: document.getElementById("upi").value.trim(),
+        defaultGST: document.getElementById("defaultGST").value.trim(),
+        currency: document.getElementById("currency").value.trim() || "₹",
+        address: document.getElementById("address").value.trim(),
+        logo: logoData || old.logo || ""
+    };
+
+    localStorage.setItem("settings", JSON.stringify(data));
+
+    alert("Settings Saved Successfully!");
+    updatePreview();
+}
+
+// UPDATE LIVE PREVIEW
+function updatePreview(){
+    let s = JSON.parse(localStorage.getItem("settings")) || {};
+
+    document.getElementById("previewName").innerText = s.name || "Your Business Name";
+    document.getElementById("previewAddress").innerText = s.address || "Your Business Address";
+    
+    let logoImg = document.getElementById("logoPreview");
+    if(s.logo){
+        logoImg.src = s.logo;
+        logoImg.style.display = "inline-block";
+    }
+}
+
+// INIT
+loadSettings();
+</script>
+
+</body>
+</html>

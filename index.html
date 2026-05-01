@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClubAd Dashboard</title>
+
+<!-- FontAwesome & Custom CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+
+<!-- PDF Generation Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+/* Dashboard Specific & Layout Styles */
+body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #fff; }
+.dashboard { display: flex; }
+
+.main { margin-left: 270px; padding: 20px; width: 100%; }
+.topbar { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px; margin-bottom: 20px;}
+.topbar-left { display: flex; align-items: center; gap: 20px; }
+.topbar h1 { font-size: 24px; margin: 0; }
+
+/* CARDS */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+.card { background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); }
+.card h3 { margin: 0; color: #94a3b8; font-size: 15px; }
+.card p { font-size: 26px; font-weight: bold; margin: 10px 0 0 0; color: #38bdf8;}
+
+/* TABLE & CHART */
+.table-container, .chart-box { margin-top: 25px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); overflow-x: auto;}
+.table-container h3, .chart-box h3 { margin: 0; color: #fff; }
+table { width: 100%; border-collapse: collapse; white-space: nowrap; margin-top: 15px;}
+table th, table td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
+table th { color: #94a3b8; background: rgba(0,0,0,0.2); }
+canvas { width: 100%; background: rgba(0,0,0,0.1); border-radius: 8px; padding: 10px; box-sizing: border-box; margin-top: 15px;}
+
+/* BADGES */
+.badge-id { background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold; border: 1px solid rgba(56, 189, 248, 0.3);}
+
+/* BUTTONS & ACTIONS */
+.action-btn { margin-right: 10px; cursor: pointer; transition: 0.2s; color: #38bdf8; }
+.action-btn:hover { color: #fff; transform: scale(1.1); }
+button { padding: 10px 18px; border: none; border-radius: 10px; background: #38bdf8; color: #000; cursor: pointer; transition: 0.3s; font-weight: bold; display: flex; align-items: center; gap: 8px;}
+button:hover { transform: scale(1.02); background: #0ea5e9; }
+.btn-pdf { background: #ef4444; color: #fff; }
+.btn-pdf:hover { background: #dc2626; }
+
+/* MODAL STYLES */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 1000; display: none; justify-content: center; align-items: center; }
+.modal-content { background: #0f172a; border: 1px solid rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 20px; }
+.modal-header h2 { margin: 0; color: #38bdf8; }
+.close-btn { background: transparent; color: #fff; font-size: 24px; padding: 0; margin: 0; cursor: pointer; border: none; }
+.close-btn:hover { transform: scale(1.1); color: #ef4444; background: transparent;}
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+.input-group input, .input-group select { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #fff; box-sizing: border-box; }
+.input-group label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 5px; }
+
+/* ==================================================
+   EXECUTIVE PDF EXPORT THEME (LIGHT MODE)
+   ================================================== */
+.pdf-mode {
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 30px !important;
+}
+.pdf-mode .pdf-title {
+    display: block !important;
+    text-align: center;
+    border-bottom: 2px solid #0ea5e9;
+    padding-bottom: 15px;
+    margin-bottom: 30px;
+    color: #0f172a !important;
+}
+.pdf-mode .card, .pdf-mode .chart-box, .pdf-mode .table-container {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: none !important;
+    color: #0f172a !important;
+}
+.pdf-mode .card h3, .pdf-mode .chart-box h3, .pdf-mode .table-container h3 {
+    color: #475569 !important;
+}
+.pdf-mode .card p { color: #0ea5e9 !important; }
+.pdf-mode table th {
+    background: #f8fafc !important;
+    color: #334155 !important;
+    border-bottom: 2px solid #cbd5e1 !important;
+}
+.pdf-mode table td {
+    color: #0f172a !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+.pdf-mode canvas {
+    background: #ffffff !important;
+}
+
+@media(max-width:768px){
+    .sidebar { display:none; }
+    .main { margin-left:0; }
+    .topbar { flex-direction: column; align-items: flex-start; gap: 15px;}
+}
+</style>
+</head>
+
+<body>
+
+<div class="dashboard">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar no-print">
+        <h2>ClubAd</h2>
+        <a href="index.html"><i class="fa fa-home"></i> Dashboard</a>
+        <a href="services.html"><i class="fa fa-cogs"></i> Services</a>
+        <a href="customers.html"><i class="fa fa-users"></i> Customers</a>
+        <a href="orders.html"><i class="fa fa-plus"></i> New Order</a>
+        <a href="invoice.html"><i class="fa fa-file-invoice"></i> Invoice</a>
+        <a href="reports.html"><i class="fa fa-chart-line"></i> Reports</a>
+        <a href="settings.html"><i class="fa fa-gear"></i> Settings</a>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+
+        <!-- TOPBAR -->
+        <div class="topbar no-print">
+            <div class="topbar-left">
+                <h1>Dashboard Overview</h1>
+                <span id="todayDate" style="color: #94a3b8; font-weight: 500;"></span>
+            </div>
+            <button class="btn-pdf" onclick="downloadPDF()"><i class="fa fa-file-pdf"></i> Download Executive PDF</button>
+        </div>
+
+        <!-- PRINTABLE DASHBOARD AREA -->
+        <div id="printableDashboard">
+            
+            <div class="pdf-title" style="display: none;">
+                <h1 style="margin: 0;">Executive Dashboard Report</h1>
+                <p style="margin: 5px 0 0 0; font-size: 14px; color: #64748b;" id="pdfDateStamp"></p>
+            </div>
+
+            <!-- CARDS -->
+            <div class="cards">
+                <div class="card">
+                    <h3>Total Customers</h3>
+                    <p id="totalCustomers" style="color: #fff;">0</p>
+                </div>
+                <div class="card">
+                    <h3>Total Services Offered</h3>
+                    <p id="totalServices" style="color: #fff;">0</p>
+                </div>
+                <div class="card">
+                    <h3>Total Gross Revenue</h3>
+                    <p id="totalRevenue">₹0.00</p>
+                </div>
+                <div class="card">
+                    <h3>Pending Payments Due</h3>
+                    <p id="pendingPayments" style="color: #f97316;">₹0.00</p>
+                </div>
+            </div>
+
+            <!-- CHART -->
+            <div class="chart-box">
+                <h3>Monthly Income Overview</h3>
+                <canvas id="incomeChart" height="80"></canvas>
+            </div>
+
+            <!-- RECENT TRANSACTIONS TABLE -->
+            <div class="table-container">
+                
+                <!-- HEADER WITH SORTING -->
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <h3>Transaction History</h3>
+                    <div class="no-print" style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 14px; color: #94a3b8;">Sort By:</span>
+                        <select id="sortOrder" onchange="loadRecent()" style="padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: #fff; cursor: pointer;">
+                            <option value="newest">Date: Newest First</option>
+                            <option value="oldest">Date: Oldest First</option>
+                            <option value="high">Amount: High to Low</option>
+                            <option value="low">Amount: Low to High</option>
+                        </select>
+                    </div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Service</th>
+                            <th>Total (₹)</th>
+                            <th>Status</th>
+                            <th class="no-print">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentTable">
+                        <tr><td colspan="7" style="text-align: center; color: #888;">Loading data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+        <!-- END PRINTABLE AREA -->
+
+    </div>
+</div>
+
+<!-- EDIT TRANSACTION MODAL -->
+<div id="editModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Edit Transaction <span id="m_display_id" class="badge-id" style="margin-left: 15px;"></span></h2>
+            <button class="close-btn" onclick="closeModal()"><i class="fa fa-times"></i></button>
+        </div>
+        
+        <input type="hidden" id="m_index">
+        <input type="hidden" id="m_orderId">
+        <input type="hidden" id="m_customerId">
+        <input type="hidden" id="m_serviceId">
+        
+        <div class="form-grid">
+            <div class="input-group">
+                <label>Customer Name</label>
+                <input type="text" id="m_customerName">
+            </div>
+            <div class="input-group">
+                <label>Service Name</label>
+                <input type="text" id="m_serviceName">
+            </div>
+            <div class="input-group">
+                <label>Date (YYYY-MM-DD)</label>
+                <input type="date" id="m_date">
+            </div>
+            <div class="input-group">
+                <label>Base Cost</label>
+                <input type="number" id="m_baseCost">
+            </div>
+            <div class="input-group">
+                <label>Service Charge</label>
+                <input type="number" id="m_serviceCharge">
+            </div>
+            <div class="input-group">
+                <label>GST %</label>
+                <input type="number" id="m_gst">
+            </div>
+            <div class="input-group">
+                <label>Extra Charges</label>
+                <input type="number" id="m_extra">
+            </div>
+            <div class="input-group">
+                <label>Discount</label>
+                <input type="number" id="m_discount">
+            </div>
+            <div class="input-group">
+                <label>Total (Auto-calculated)</label>
+                <input type="text" id="m_total" readonly style="background: rgba(0,0,0,0.3);">
+            </div>
+            <div class="input-group">
+                <label>Advance Paid</label>
+                <input type="number" id="m_advance">
+            </div>
+            <div class="input-group">
+                <label>Payment Mode</label>
+                <select id="m_paymentMode">
+                    <option>Cash</option>
+                    <option>UPI</option>
+                    <option>Bank</option>
+                </select>
+            </div>
+        </div>
+        
+        <button onclick="saveEdit()" style="margin-top: 20px; width: 100%; justify-content: center;">Save Changes</button>
+    </div>
+</div>
+
+<script>
+// INITIALIZE DATE
+document.getElementById("todayDate").innerText = new Date().toLocaleDateString();
+document.getElementById("pdfDateStamp").innerText = "Generated on: " + new Date().toLocaleDateString();
+
+// 1. LOAD DASHBOARD DATA
+function loadDashboard(){
+    let customers = JSON.parse(localStorage.getItem("customers")) || [];
+    let services = JSON.parse(localStorage.getItem("services")) || [];
+    let orders = JSON.parse(localStorage.getItem("orders")) || [];
+
+    document.getElementById("totalCustomers").innerText = customers.length;
+    document.getElementById("totalServices").innerText = services.length;
+
+    let revenue = 0;
+    let pending = 0;
+
+    orders.forEach(o => {
+        let total = parseFloat(o.total) || 0;
+        let advance = parseFloat(o.advance) || 0;
+        
+        revenue += total;
+        if((total - advance) > 0) pending += (total - advance);
+    });
+
+    // Fix card text colors strictly to avoid overriding in PDF mode later
+    document.getElementById("totalCustomers").style.color = "#fff";
+    document.getElementById("totalServices").style.color = "#fff";
+
+    document.getElementById("totalRevenue").innerText = "₹" + revenue.toFixed(2);
+    document.getElementById("pendingPayments").innerText = "₹" + pending.toFixed(2);
+
+    loadRecent(); // Load table
+    drawChart(orders); // Load Chart
+}
+
+// 2. LOAD & SORT RECENT TRANSACTIONS
+function loadRecent(){
+    let orders = JSON.parse(localStorage.getItem("orders")) || [];
+    let table = document.getElementById("recentTable");
+    let sortType = document.getElementById("sortOrder").value;
+    
+    table.innerHTML = "";
+
+    if(orders.length === 0) {
+        table.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #888;">No recent transactions.</td></tr>`;
+        return;
+    }
+
+    // Map original index so Edit/Delete works perfectly no matter how we sort
+    let mappedOrders = orders.map((o, i) => ({ ...o, originalIndex: i }));
+    
+    // Sort logic
+    mappedOrders.sort((a, b) => {
+        let dateA = new Date(a.date).getTime() || 0;
+        let dateB = new Date(b.date).getTime() || 0;
+        let totalA = parseFloat(a.total) || 0;
+        let totalB = parseFloat(b.total) || 0;
+
+        if(sortType === 'newest') return dateB - dateA;
+        if(sortType === 'oldest') return dateA - dateB;
+        if(sortType === 'high') return totalB - totalA;
+        if(sortType === 'low') return totalA - totalB;
+    });
+    
+    // Display top 10 results
+    let displayOrders = mappedOrders.slice(0, 10);
+
+    displayOrders.forEach(o => {
+        let oId = o.id || "ORD-LEGACY";
+        let total = parseFloat(o.total) || 0;
+        let advance = parseFloat(o.advance) || 0;
+        let balance = total - advance;
+        let status = balance <= 0 ? '<span style="color: #22c55e; font-weight: bold;">Paid</span>' : '<span style="color: #f97316; font-weight: bold;">Pending</span>';
+        let dateStr = o.date ? new Date(o.date).toLocaleDateString() : "N/A";
+
+        table.innerHTML += `
+            <tr>
+                <td><span class="badge-id">${oId}</span></td>
+                <td>${dateStr}</td>
+                <td>${o.customerName || "-"}</td>
+                <td>${o.serviceName || "-"}</td>
+                <td>₹${total.toFixed(2)}</td>
+                <td>${status}</td>
+                <td class="no-print">
+                    <i class="fa fa-edit action-btn" title="Edit" onclick="openModal(${o.originalIndex})"></i>
+                    <i class="fa fa-trash action-btn" title="Delete" style="color: #ef4444;" onclick="deleteEntry(${o.originalIndex})"></i>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+// 3. DRAW CHART
+function drawChart(orders){
+    let canvas = document.getElementById("incomeChart");
+    if(!canvas) return;
+    
+    let ctx = canvas.getContext("2d");
+    let months = new Array(12).fill(0);
+
+    orders.forEach(o => {
+        if(o.date) {
+            let m = new Date(o.date).getMonth();
+            months[m] += parseFloat(o.total) || 0;
+        }
+    });
+
+    let width = canvas.width;
+    let height = canvas.height;
+    let max = Math.max(...months, 100);
+
+    ctx.clearRect(0, 0, width, height);
+    let barWidth = width / 12;
+
+    months.forEach((val, i) => {
+        let barHeight = (val / max) * height;
+        let gradient = ctx.createLinearGradient(0, height, 0, height - barHeight);
+        gradient.addColorStop(0, "#0ea5e9");
+        gradient.addColorStop(1, "#38bdf8");
+        
+        ctx.fillStyle = gradient;
+        ctx.fillRect((i * barWidth) + 4, height - barHeight, barWidth - 8, barHeight);
+    });
+}
+
+// 4. DELETE ENTRY
+function deleteEntry(index) {
+    if(confirm("Are you sure you want to permanently delete this transaction?")) {
+        let orders = JSON.parse(localStorage.getItem("orders")) || [];
+        orders.splice(index, 1);
+        localStorage.setItem("orders", JSON.stringify(orders));
+        loadDashboard();
+    }
+}
+
+// 5. EDIT MODAL LOGIC
+function openModal(index) {
+    let orders = JSON.parse(localStorage.getItem("orders")) || [];
+    let o = orders[index];
+
+    document.getElementById("m_index").value = index;
+    document.getElementById("m_display_id").innerText = o.id || "ORD-LEGACY";
+    document.getElementById("m_orderId").value = o.id || "ORD-LEGACY";
+    document.getElementById("m_customerId").value = o.customerId || "";
+    document.getElementById("m_serviceId").value = o.serviceId || "";
+    
+    document.getElementById("m_customerName").value = o.customerName || "";
+    document.getElementById("m_serviceName").value = o.serviceName || "";
+    
+    let d = new Date(o.date);
+    document.getElementById("m_date").value = !isNaN(d.getTime()) ? d.toISOString().split('T')[0] : "";
+
+    document.getElementById("m_baseCost").value = o.baseCost || 0;
+    document.getElementById("m_serviceCharge").value = o.serviceCharge || 0;
+    document.getElementById("m_gst").value = o.gst || 0;
+    document.getElementById("m_extra").value = o.extra || 0;
+    document.getElementById("m_discount").value = o.discount || 0;
+    document.getElementById("m_advance").value = o.advance || 0;
+    document.getElementById("m_paymentMode").value = o.paymentMode || "Cash";
+    
+    calcModalTotal();
+    document.getElementById("editModal").style.display = "flex";
+}
+
+function closeModal() {
+    document.getElementById("editModal").style.display = "none";
+}
+
+function calcModalTotal() {
+    let base = parseFloat(document.getElementById("m_baseCost").value) || 0;
+    let charge = parseFloat(document.getElementById("m_serviceCharge").value) || 0;
+    let gstVal = parseFloat(document.getElementById("m_gst").value) || 0;
+    let extraVal = parseFloat(document.getElementById("m_extra").value) || 0;
+    let discountVal = parseFloat(document.getElementById("m_discount").value) || 0;
+
+    let subtotal = base + charge + extraVal;
+    let gstAmt = subtotal * (gstVal / 100);
+    let total = subtotal + gstAmt - discountVal;
+
+    document.getElementById("m_total").value = total.toFixed(2);
+}
+
+["m_baseCost", "m_serviceCharge", "m_gst", "m_extra", "m_discount"].forEach(id => {
+    document.getElementById(id).addEventListener("input", calcModalTotal);
+});
+
+function saveEdit() {
+    let orders = JSON.parse(localStorage.getItem("orders")) || [];
+    let index = document.getElementById("m_index").value;
+    
+    let originalDate = new Date(orders[index].date);
+    let newDateInput = document.getElementById("m_date").value;
+    let finalDate = originalDate;
+    
+    if(newDateInput) {
+        let parts = newDateInput.split('-');
+        finalDate.setFullYear(parts[0], parts[1]-1, parts[2]);
+    }
+
+    orders[index] = {
+        ...orders[index], // Preserves any other hidden fields we might add later
+        id: document.getElementById("m_orderId").value,
+        customerId: document.getElementById("m_customerId").value,
+        serviceId: document.getElementById("m_serviceId").value,
+        date: finalDate.toISOString(),
+        customerName: document.getElementById("m_customerName").value.trim(),
+        serviceName: document.getElementById("m_serviceName").value.trim(),
+        baseCost: parseFloat(document.getElementById("m_baseCost").value) || 0,
+        serviceCharge: parseFloat(document.getElementById("m_serviceCharge").value) || 0,
+        gst: parseFloat(document.getElementById("m_gst").value) || 0,
+        extra: parseFloat(document.getElementById("m_extra").value) || 0,
+        discount: parseFloat(document.getElementById("m_discount").value) || 0,
+        total: parseFloat(document.getElementById("m_total").value) || 0,
+        advance: parseFloat(document.getElementById("m_advance").value) || 0,
+        paymentMode: document.getElementById("m_paymentMode").value
+    };
+
+    localStorage.setItem("orders", JSON.stringify(orders));
+    closeModal();
+    loadDashboard();
+}
+
+// 6. DOWNLOAD PROFESSIONAL PDF
+function downloadPDF() {
+    let element = document.getElementById('printableDashboard');
+    
+    // 1. Temporarily add the light-theme PDF class
+    element.classList.add('pdf-mode');
+    
+    // 2. Hide unwanted UI elements (dropdowns, edit buttons, etc)
+    let noPrintEls = document.querySelectorAll('.no-print');
+    noPrintEls.forEach(el => el.style.display = 'none');
+    
+    // 3. Remove inline color styles on cards so CSS takes over
+    document.getElementById("totalCustomers").style.color = "";
+    document.getElementById("totalServices").style.color = "";
+
+    let opt = {
+        margin:       [15, 15, 15, 15], 
+        filename:     'ClubAd_Dashboard_' + new Date().toISOString().split('T')[0] + '.pdf',
+        image:        { type: 'jpeg', quality: 1.0 },
+        html2canvas:  { scale: 2, backgroundColor: '#ffffff' }, // Force white background
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: 'avoid-all' }
+    };
+
+    // Generate PDF
+    html2pdf().set(opt).from(element).save().then(() => {
+        // 4. Restore everything back to Dark Mode
+        element.classList.remove('pdf-mode');
+        noPrintEls.forEach(el => el.style.display = '');
+        
+        // Restore card text colors
+        document.getElementById("totalCustomers").style.color = "#fff";
+        document.getElementById("totalServices").style.color = "#fff";
+    });
+}
+
+// BOOT UP
+loadDashboard();
+</script>
+
+</body>
+</html>

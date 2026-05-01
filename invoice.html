@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invoice - ClubAd</title>
+
+<!-- FontAwesome & Custom CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+
+<!-- Essential Libraries: QR Code & PDF Generator -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+/* Base structural styles */
+body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #fff; }
+.dashboard { display: flex; }
+
+/* SIDEBAR */
+.sidebar { width: 250px; background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); height: 100vh; padding: 20px; position: fixed; z-index: 100; display: flex; flex-direction: column; justify-content: space-between;}
+.sidebar h2 { color: #38bdf8; text-align: center; margin-bottom: 30px;}
+.sidebar a { display: block; color: #ccc; padding: 12px; margin: 10px 0; text-decoration: none; border-radius: 10px; transition: 0.3s; }
+.sidebar a:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.developer-credit { text-align: center; font-size: 11px; color: #64748b; letter-spacing: 1px; margin-top: auto; padding-top: 20px;}
+
+/* MAIN */
+.main { margin-left: 270px; padding: 20px; width: 100%; display: flex; flex-direction: column; align-items: center;}
+
+/* =========================================
+   SCALABLE SEARCH CONTROLS (NEW)
+   ========================================= */
+.controls-container { width: 100%; max-width: 850px; display: flex; gap: 15px; margin-bottom: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); align-items: flex-start;}
+.search-wrapper { flex: 1; position: relative; }
+.search-wrapper input { width: 100%; padding: 12px 15px 12px 40px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: #fff; font-size: 16px; outline: none; transition: 0.3s; box-sizing: border-box;}
+.search-wrapper input:focus { border-color: #38bdf8; background: rgba(0,0,0,0.5); }
+.search-wrapper i { position: absolute; left: 15px; top: 15px; color: #94a3b8; }
+
+/* The dropdown results list */
+.search-results { position: absolute; top: 100%; left: 0; right: 0; background: #0f172a; border: 1px solid #38bdf8; border-radius: 10px; margin-top: 5px; max-height: 250px; overflow-y: auto; z-index: 50; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.7); }
+.result-item { padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center;}
+.result-item:hover { background: rgba(56, 189, 248, 0.1); }
+.result-item:last-child { border-bottom: none; }
+.result-name { font-weight: bold; color: #fff; display: block; }
+.result-meta { font-size: 12px; color: #94a3b8; }
+.result-date { font-size: 12px; color: #38bdf8; background: rgba(56, 189, 248, 0.1); padding: 3px 8px; border-radius: 5px;}
+
+.btn-group { display: flex; gap: 10px; }
+button { padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; transition: 0.3s; font-weight: bold; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+button:hover { transform: scale(1.02); }
+.btn-print { background: #38bdf8; color: #000; }
+.btn-pdf { background: #ef4444; color: #fff; }
+
+/* =========================================
+   PROFESSIONAL INVOICE DOCUMENT
+   ========================================= */
+.invoice-wrapper { background: #ffffff; color: #0f172a; width: 100%; max-width: 850px; padding: 50px; border-radius: 15px; box-shadow: 0 15px 50px rgba(0,0,0,0.5); box-sizing: border-box; position: relative; overflow: hidden; }
+
+/* Watermark Stamp Graphic */
+.invoice-stamp { position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 100px; font-weight: 900; text-transform: uppercase; letter-spacing: 10px; opacity: 0; pointer-events: none; z-index: 0; border: 8px solid; padding: 10px 30px; border-radius: 20px; }
+.stamp-paid { color: rgba(34, 197, 94, 0.15); border-color: rgba(34, 197, 94, 0.15); opacity: 1; }
+.stamp-pending { color: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.1); opacity: 1; }
+
+.invoice-content { position: relative; z-index: 1; }
+
+/* Header Elements */
+.doc-header { display: flex; justify-content: space-between; border-bottom: 3px solid #0ea5e9; padding-bottom: 20px; margin-bottom: 30px; }
+.brand-section { display: flex; flex-direction: column; gap: 10px; }
+.brand-logo { max-width: 120px; max-height: 80px; display: none; object-fit: contain; }
+.brand-name { font-size: 26px; font-weight: 800; color: #0f172a; margin: 0; text-transform: uppercase;}
+.brand-details { font-size: 13px; color: #475569; line-height: 1.5; }
+
+.meta-section { text-align: right; }
+.invoice-title { font-size: 36px; font-weight: 900; color: #0ea5e9; margin: 0 0 10px 0; letter-spacing: 2px; }
+.meta-grid { display: grid; grid-template-columns: auto auto; gap: 5px 15px; font-size: 14px; justify-content: right; }
+.meta-grid strong { color: #334155; }
+
+/* Bill To Section */
+.billing-section { display: flex; justify-content: space-between; margin-bottom: 30px; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; }
+.bill-to h3 { margin: 0 0 10px 0; font-size: 14px; color: #64748b; text-transform: uppercase; letter-spacing: 1px;}
+.bill-to p { margin: 3px 0; font-size: 15px; color: #0f172a; }
+.bill-to .client-name { font-size: 20px; font-weight: bold; color: #0ea5e9; margin-bottom: 8px;}
+
+/* Main Table */
+.invoice-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+.invoice-table th { background: #0f172a; color: #ffffff; padding: 12px 15px; text-align: left; font-size: 14px; text-transform: uppercase; }
+.invoice-table td { padding: 15px; border-bottom: 1px solid #cbd5e1; font-size: 15px; color: #1e293b; }
+.invoice-table th.right, .invoice-table td.right { text-align: right; }
+.item-desc { font-weight: 600; color: #0f172a; display: block; }
+.item-meta { font-size: 12px; color: #64748b; margin-top: 4px; display: block;}
+
+/* Totals Area */
+.totals-wrapper { display: flex; justify-content: space-between; align-items: flex-start; }
+.qr-container { text-align: center; border: 1px dashed #cbd5e1; padding: 15px; border-radius: 10px; background: #f8fafc; width: 140px; display: none;}
+.qr-container p { margin: 0 0 10px 0; font-size: 12px; font-weight: bold; color: #475569; }
+.qr-code { margin: 0 auto; }
+
+.totals-grid { width: 350px; }
+.total-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 15px; color: #475569; border-bottom: 1px solid #f1f5f9; }
+.total-row.grand-total { font-size: 20px; font-weight: 800; color: #0f172a; border-top: 2px solid #cbd5e1; border-bottom: none; padding-top: 15px; margin-top: 5px;}
+.total-row.balance { font-size: 18px; font-weight: bold; color: #ef4444; background: #fef2f2; padding: 10px; border-radius: 6px; margin-top: 10px; border: 1px solid #fecaca;}
+.total-row.balance.paid { color: #166534; background: #f0fdf4; border-color: #bbf7d0;}
+
+/* Footer */
+.invoice-footer { margin-top: 40px; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px; color: #64748b; font-size: 13px; }
+.footer-note { font-weight: bold; color: #0f172a; margin-bottom: 5px; }
+
+/* =========================================
+   1-PAGE PDF COMPRESSION CLASSES
+   ========================================= */
+.pdf-mode { padding: 30px !important; }
+.pdf-mode .doc-header { margin-bottom: 20px !important; padding-bottom: 10px !important; }
+.pdf-mode .billing-section { margin-bottom: 20px !important; padding: 15px !important; }
+.pdf-mode .invoice-table { margin-bottom: 20px !important; }
+.pdf-mode .invoice-table td { padding: 10px 15px !important; }
+.pdf-mode .invoice-footer { margin-top: 30px !important; padding-top: 10px !important; }
+.pdf-mode .invoice-stamp { transform: translate(-50%, -50%) rotate(-30deg) scale(0.8); }
+
+@media print {
+    body { background: #fff; padding: 0; }
+    .sidebar, .controls-container { display: none !important; }
+    .main { margin: 0; padding: 0; }
+    .invoice-wrapper { box-shadow: none; border-radius: 0; padding: 20px; max-width: 100%; }
+}
+@media(max-width:768px){
+    .sidebar { display:none; }
+    .main { margin-left:0; }
+    .controls-container { flex-direction: column; }
+    .doc-header, .billing-section, .totals-wrapper { flex-direction: column; gap: 20px; }
+    .meta-section { text-align: left; }
+    .meta-grid { justify-content: left; }
+    .totals-grid { width: 100%; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="dashboard">
+
+<!-- SIDEBAR -->
+<div class="sidebar no-print">
+    <div>
+        <h2>ClubAd</h2>
+        <a href="index.html"><i class="fa fa-home"></i> Dashboard</a>
+        <a href="services.html"><i class="fa fa-cogs"></i> Services</a>
+        <a href="customers.html"><i class="fa fa-users"></i> Customers</a>
+        <a href="orders.html"><i class="fa fa-plus"></i> New Order</a>
+        <a href="invoice.html"><i class="fa fa-file-invoice"></i> Invoice</a>
+        <a href="reports.html"><i class="fa fa-chart-line"></i> Reports</a>
+        <a href="settings.html"><i class="fa fa-gear"></i> Settings</a>
+    </div>
+    <div class="developer-credit">DEVELOPED BY BASITH PARAVOOR</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<div class="controls-container no-print">
+    
+    <!-- SMART SEARCH COMPONENT -->
+    <div class="search-wrapper">
+        <i class="fa fa-search"></i>
+        <input type="text" id="orderSearchInput" placeholder="Search orders by Name, Phone, or Service..." onkeyup="filterOrders()" onclick="filterOrders()">
+        <div id="orderDropdownList" class="search-results">
+            <!-- Results injected here -->
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn-print" onclick="window.print()"><i class="fa fa-print"></i> Print</button>
+        <button class="btn-pdf" onclick="downloadCompressedPDF()"><i class="fa fa-file-pdf"></i> Download PDF</button>
+    </div>
+</div>
+
+<!-- PRINTABLE INVOICE AREA -->
+<div class="invoice-wrapper" id="printableInvoice">
+    
+    <!-- GRAPHIC WATERMARK STAMP -->
+    <div id="invoiceStamp" class="invoice-stamp"></div>
+
+    <div class="invoice-content">
+        <!-- HEADER -->
+        <div class="doc-header">
+            <div class="brand-section">
+                <img id="logoImg" class="brand-logo" alt="Business Logo">
+                <h2 id="businessName" class="brand-name">ClubAd Travels</h2>
+                <div class="brand-details">
+                    <span id="businessAddress">Address details not configured</span><br>
+                    <strong>GSTIN:</strong> <span id="gstNo">N/A</span><br>
+                    <strong>Phone:</strong> <span id="phoneNo">N/A</span>
+                </div>
+            </div>
+            <div class="meta-section">
+                <h1 class="invoice-title">INVOICE</h1>
+                <div class="meta-grid">
+                    <strong>Invoice No:</strong> <span id="invoiceNo">INV-0000</span>
+                    <strong>Date:</strong> <span id="date">--/--/----</span>
+                    <strong>Status:</strong> <span id="paymentStatus" style="font-weight: bold; color: #0ea5e9;">Unpaid</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- BILL TO -->
+        <div class="billing-section">
+            <div class="bill-to">
+                <h3>Billed To:</h3>
+                <p class="client-name" id="customerName">Client Name</p>
+                <p><strong>Mobile:</strong> <span id="customerMobile">N/A</span></p>
+            </div>
+            <div class="bill-to" style="text-align: right;">
+                <h3>Payment Mode:</h3>
+                <p style="font-weight: bold; font-size: 18px; color: #0f172a;" id="paymentModeType">-</p>
+            </div>
+        </div>
+
+        <!-- ITEM TABLE -->
+        <table class="invoice-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">#</th>
+                    <th style="width: 65%;">Service Description</th>
+                    <th class="right" style="width: 30%;">Total Amount</th>
+                </tr>
+            </thead>
+            <tbody id="items">
+                <tr>
+                    <td colspan="3" style="text-align: center; color: #94a3b8; padding: 40px;">Search and select an order to generate invoice</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- TOTALS & PAYMENT -->
+        <div class="totals-wrapper">
+            
+            <!-- QR Code -->
+            <div class="qr-container" id="qrWrapper">
+                <p>Scan to Pay Balance</p>
+                <div id="qrcode" class="qr-code"></div>
+            </div>
+            <div id="qrPlaceholder" style="width: 140px;"></div>
+
+            <!-- Calculations -->
+            <div class="totals-grid">
+                <div class="total-row">
+                    <span>Subtotal:</span>
+                    <span id="subtotal">₹0.00</span>
+                </div>
+                <div class="total-row">
+                    <span>GST Applied:</span>
+                    <span id="gstAmt">₹0.00</span>
+                </div>
+                <div class="total-row">
+                    <span>Discount:</span>
+                    <span id="discountAmt">- ₹0.00</span>
+                </div>
+                <div class="total-row grand-total">
+                    <span>Grand Total:</span>
+                    <span id="total">₹0.00</span>
+                </div>
+                <div class="total-row" style="color: #166534; border-bottom: none; margin-top: 10px;">
+                    <span>Advance Paid:</span>
+                    <span id="paid">₹0.00</span>
+                </div>
+                <div class="total-row balance" id="balanceRow">
+                    <span>Balance Due:</span>
+                    <span id="balance">₹0.00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="invoice-footer">
+            <p class="footer-note">Thank you for choosing <span id="footerBrand">ClubAd</span>!</p>
+            <p>If you have any questions concerning this invoice, please contact us.</p>
+        </div>
+    </div>
+</div>
+
+</div>
+</div>
+
+<script>
+let currentSelectedOrderIndex = null;
+
+// LOAD BUSINESS SETTINGS
+function loadSettings(){
+    let s = JSON.parse(localStorage.getItem("settings")) || {};
+    let bName = s.name || "ClubAd Travels & Online Services";
+    
+    document.getElementById("businessName").innerText = bName;
+    document.getElementById("footerBrand").innerText = bName;
+    document.getElementById("businessAddress").innerText = s.address || "Kerala, India";
+    document.getElementById("gstNo").innerText = s.gst || "N/A";
+    document.getElementById("phoneNo").innerText = s.phone || "N/A";
+
+    let logoImg = document.getElementById("logoImg");
+    if(s.logo){
+        logoImg.src = s.logo;
+        logoImg.style.display = "block";
+    }
+}
+
+// ==========================================
+// SCALABLE SEARCH LOGIC
+// ==========================================
+function filterOrders() {
+    let input = document.getElementById("orderSearchInput").value.toLowerCase();
+    let dropdown = document.getElementById("orderDropdownList");
+    let orders = JSON.parse(localStorage.getItem("orders")) || [];
+    
+    dropdown.innerHTML = "";
+    
+    // Map array to remember the original DB index, then reverse so newest are at the top
+    let mappedOrders = orders.map((o, i) => ({ ...o, originalIndex: i })).reverse();
+    
+    let matches = mappedOrders.filter(o => {
+        let name = (o.customerName || "").toLowerCase();
+        let phone = (o.customerMobile || "").toLowerCase();
+        let service = (o.serviceName || "").toLowerCase();
+        return name.includes(input) || phone.includes(input) || service.includes(input);
+    });
+
+    if (matches.length === 0) {
+        dropdown.innerHTML = `<div style="padding: 15px; color: #94a3b8; text-align: center;">No orders found.</div>`;
+        dropdown.style.display = "block";
+        return;
+    }
+
+    // Limit to top 20 results for performance
+    matches.slice(0, 20).forEach(o => {
+        let dateStr = o.date ? new Date(o.date).toLocaleDateString() : "N/A";
+        
+        let item = document.createElement("div");
+        item.className = "result-item";
+        item.innerHTML = `
+            <div>
+                <span class="result-name">${o.customerName}</span>
+                <span class="result-meta">${o.serviceName} | ${o.customerMobile || "No Phone"}</span>
+            </div>
+            <div class="result-date">${dateStr}</div>
+        `;
+        
+        // When clicked, load this specific invoice
+        item.onclick = function() {
+            currentSelectedOrderIndex = o.originalIndex;
+            document.getElementById("orderSearchInput").value = `${o.customerName} - ${o.serviceName}`;
+            dropdown.style.display = "none";
+            loadInvoice(o.originalIndex);
+        };
+        
+        dropdown.appendChild(item);
+    });
+
+    dropdown.style.display = "block";
+}
+
+// Hide dropdown when clicking outside
+document.addEventListener("click", function(e) {
+    if(!e.target.closest(".search-wrapper")) {
+        document.getElementById("orderDropdownList").style.display = "none";
+    }
+});
+
+// ==========================================
+// RENDER INVOICE LOGIC
+// ==========================================
+function loadInvoice(index){
+    let orders = JSON.parse(localStorage.getItem("orders")) || [];
+    let o = orders[index];
+    if(!o) return;
+    
+    // Core details
+    let invoiceNumber = parseInt(index) + 1;
+    document.getElementById("invoiceNo").innerText = "INV-" + invoiceNumber.toString().padStart(4, '0');
+    document.getElementById("date").innerText = new Date(o.date).toLocaleDateString();
+    document.getElementById("customerName").innerText = o.customerName || "N/A";
+    document.getElementById("customerMobile").innerText = o.customerMobile || "N/A";
+    document.getElementById("paymentModeType").innerText = o.paymentMode || "Cash";
+
+    // Item Table
+    let base = parseFloat(o.baseCost) || 0;
+    let charge = parseFloat(o.serviceCharge) || 0;
+    let extra = parseFloat(o.extra) || 0;
+    let itemSubtotal = base + charge + extra;
+
+    document.getElementById("items").innerHTML = `
+        <tr>
+            <td>1</td>
+            <td>
+                <span class="item-desc">${o.serviceName || "Service"}</span>
+                <span class="item-meta">Base: ₹${base.toFixed(2)} | Charge: ₹${charge.toFixed(2)} | Extra: ₹${extra.toFixed(2)}</span>
+            </td>
+            <td class="right">₹${itemSubtotal.toFixed(2)}</td>
+        </tr>
+    `;
+
+    // Totals
+    let gstVal = parseFloat(o.gst) || 0;
+    let gstAmt = itemSubtotal * (gstVal / 100);
+    let discount = parseFloat(o.discount) || 0;
+    let total = parseFloat(o.total) || 0;
+    let advance = parseFloat(o.advance) || 0;
+    let balance = total - advance;
+
+    document.getElementById("subtotal").innerText = "₹" + itemSubtotal.toFixed(2);
+    document.getElementById("gstAmt").innerText = "₹" + gstAmt.toFixed(2);
+    document.getElementById("discountAmt").innerText = "- ₹" + discount.toFixed(2);
+    document.getElementById("total").innerText = "₹" + total.toFixed(2);
+    document.getElementById("paid").innerText = "₹" + advance.toFixed(2);
+    document.getElementById("balance").innerText = "₹" + balance.toFixed(2);
+
+    // Apply Smart UI Logic (Stamps & QR)
+    let stamp = document.getElementById("invoiceStamp");
+    let balanceRow = document.getElementById("balanceRow");
+    let paymentStatus = document.getElementById("paymentStatus");
+
+    if (balance <= 0) {
+        stamp.innerText = "PAID";
+        stamp.className = "invoice-stamp stamp-paid";
+        balanceRow.classList.add("paid");
+        document.getElementById("balance").innerText = "₹0.00";
+        paymentStatus.innerText = "Paid in Full";
+        paymentStatus.style.color = "#166534";
+        document.getElementById("qrWrapper").style.display = "none";
+        document.getElementById("qrPlaceholder").style.display = "block";
+    } else {
+        stamp.innerText = "BALANCE DUE";
+        stamp.className = "invoice-stamp stamp-pending";
+        balanceRow.classList.remove("paid");
+        paymentStatus.innerText = "Pending";
+        paymentStatus.style.color = "#ef4444";
+        document.getElementById("qrWrapper").style.display = "block";
+        document.getElementById("qrPlaceholder").style.display = "none";
+        generateQR(balance);
+    }
+}
+
+function generateQR(amount){
+    let settings = JSON.parse(localStorage.getItem("settings")) || {};
+    let upi = settings.upi || "";
+    let qrContainer = document.getElementById("qrcode");
+    qrContainer.innerHTML = ""; 
+
+    if(!upi || amount <= 0) {
+        document.getElementById("qrWrapper").style.display = "none";
+        document.getElementById("qrPlaceholder").style.display = "block";
+        return; 
+    }
+    let businessName = encodeURIComponent(settings.name || "ClubAd");
+    let upiURL = `upi://pay?pa=${upi}&pn=${businessName}&am=${amount}&cu=INR`;
+    new QRCode(qrContainer, { text: upiURL, width: 100, height: 100 });
+}
+
+// ==========================================
+// 1-PAGE COMPRESSED PDF EXPORT
+// ==========================================
+function downloadCompressedPDF() {
+    if(currentSelectedOrderIndex === null) { 
+        alert("Please search and select an order first."); 
+        return; 
+    }
+    
+    let element = document.getElementById('printableInvoice');
+    let invNumber = parseInt(currentSelectedOrderIndex) + 1;
+    let invStr = "INV-" + invNumber.toString().padStart(4, '0');
+    
+    // 1. Add class to tighten margins and force everything to fit on 1 page
+    element.classList.add('pdf-mode');
+    
+    // Temporarily fix visual borders
+    element.style.borderRadius = "0";
+    element.style.boxShadow = "none";
+
+    let opt = {
+        margin:       [10, 10, 10, 10], // Tighter margins to save space
+        filename:     `ClubAd_Invoice_${invStr}.pdf`,
+        image:        { type: 'jpeg', quality: 1.0 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(element).save().then(() => {
+        // 2. Remove the compression class to restore the web view
+        element.classList.remove('pdf-mode');
+        element.style.borderRadius = "15px";
+        element.style.boxShadow = "0 15px 50px rgba(0,0,0,0.5)";
+    });
+}
+
+// INIT
+loadSettings();
+</script>
+
+</body>
+</html>
