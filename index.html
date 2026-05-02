@@ -3,99 +3,97 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ClubAd Dashboard</title>
+<title>Dashboard - ClubAd</title>
 
-<!-- FontAwesome & Custom CSS -->
+<!-- FontAwesome & Custom Fonts -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Poppins:wght@400;600;800&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 
 <!-- PDF Generation Library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
+<!-- SYSTEM ACTIVATION SECURITY -->
+<script src="activation.js"></script>
+
 <style>
+/* ==========================================
+   DYNAMIC CSS VARIABLES (THEME ENGINE)
+   ========================================== */
+:root {
+    --primary-color: #38bdf8;
+    --app-font: 'Segoe UI', sans-serif;
+    --app-font-size: 16px;
+    --bg-color: #0f172a;
+}
+
 /* Dashboard Specific & Layout Styles */
-body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #fff; }
+body { margin: 0; font-family: var(--app-font); font-size: var(--app-font-size); background: var(--bg-color); color: #fff; transition: background 0.3s, font-family 0.3s; }
 .dashboard { display: flex; }
 
-.main { margin-left: 270px; padding: 20px; width: 100%; }
+.main { margin-left: 270px; padding: 20px; width: 100%; display: flex; flex-direction: column; min-height: 100vh;}
 .topbar { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px; margin-bottom: 20px;}
 .topbar-left { display: flex; align-items: center; gap: 20px; }
-.topbar h1 { font-size: 24px; margin: 0; }
+.topbar h1 { font-size: 1.5em; margin: 0; }
+
+/* SIDEBAR */
+.sidebar { width: 250px; background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); height: 100vh; padding: 20px; position: fixed; z-index: 100; }
+.sidebar a { display: block; color: #ccc; padding: 12px; margin: 10px 0; text-decoration: none; border-radius: 10px; transition: 0.3s; }
+.sidebar a:hover { background: rgba(255,255,255,0.1); color: #fff; }
 
 /* CARDS */
 .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
 .card { background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); }
-.card h3 { margin: 0; color: #94a3b8; font-size: 15px; }
-.card p { font-size: 26px; font-weight: bold; margin: 10px 0 0 0; color: #38bdf8;}
+.card h3 { margin: 0; color: #94a3b8; font-size: 0.9em; }
+.card p { font-size: 1.6em; font-weight: bold; margin: 10px 0 0 0; color: var(--primary-color);}
 
 /* TABLE & CHART */
 .table-container, .chart-box { margin-top: 25px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); overflow-x: auto;}
 .table-container h3, .chart-box h3 { margin: 0; color: #fff; }
 table { width: 100%; border-collapse: collapse; white-space: nowrap; margin-top: 15px;}
-table th, table td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
+table th, table td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9em; }
 table th { color: #94a3b8; background: rgba(0,0,0,0.2); }
 canvas { width: 100%; background: rgba(0,0,0,0.1); border-radius: 8px; padding: 10px; box-sizing: border-box; margin-top: 15px;}
 
 /* BADGES */
-.badge-id { background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold; border: 1px solid rgba(56, 189, 248, 0.3);}
+.badge-id { background: rgba(255,255,255,0.05); color: var(--primary-color); padding: 4px 8px; border-radius: 6px; font-size: 0.8em; font-weight: bold; border: 1px solid var(--primary-color);}
 
 /* BUTTONS & ACTIONS */
-.action-btn { margin-right: 10px; cursor: pointer; transition: 0.2s; color: #38bdf8; }
+.action-btn { margin-right: 10px; cursor: pointer; transition: 0.2s; color: var(--primary-color); }
 .action-btn:hover { color: #fff; transform: scale(1.1); }
-button { padding: 10px 18px; border: none; border-radius: 10px; background: #38bdf8; color: #000; cursor: pointer; transition: 0.3s; font-weight: bold; display: flex; align-items: center; gap: 8px;}
-button:hover { transform: scale(1.02); background: #0ea5e9; }
+button { padding: 10px 18px; border: none; border-radius: 10px; background: var(--primary-color); color: #000; cursor: pointer; transition: 0.3s; font-weight: bold; display: flex; align-items: center; gap: 8px; font-family: inherit;}
+button:hover { transform: scale(1.02); filter: brightness(1.1); }
 .btn-pdf { background: #ef4444; color: #fff; }
-.btn-pdf:hover { background: #dc2626; }
 
 /* MODAL STYLES */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 1000; display: none; justify-content: center; align-items: center; }
-.modal-content { background: #0f172a; border: 1px solid rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
+.modal-content { background: var(--bg-color); border: 1px solid rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
 .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 20px; }
-.modal-header h2 { margin: 0; color: #38bdf8; }
-.close-btn { background: transparent; color: #fff; font-size: 24px; padding: 0; margin: 0; cursor: pointer; border: none; }
+.modal-header h2 { margin: 0; color: var(--primary-color); font-size: 1.3em;}
+.close-btn { background: transparent; color: #fff; font-size: 1.5em; padding: 0; margin: 0; cursor: pointer; border: none; }
 .close-btn:hover { transform: scale(1.1); color: #ef4444; background: transparent;}
 .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
-.input-group input, .input-group select { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #fff; box-sizing: border-box; }
-.input-group label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 5px; }
+.input-group input, .input-group select { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #fff; box-sizing: border-box; font-family: inherit; font-size: 0.9em;}
+.input-group input:focus, .input-group select:focus { border-color: var(--primary-color); outline: none; }
+.input-group label { display: block; font-size: 0.8em; color: #94a3b8; margin-bottom: 5px; }
+.input-group select option { background: var(--bg-color); color: #fff; }
 
 /* ==================================================
    EXECUTIVE PDF EXPORT THEME (LIGHT MODE)
    ================================================== */
-.pdf-mode {
-    background: #ffffff !important;
-    color: #000000 !important;
-    padding: 30px !important;
-}
-.pdf-mode .pdf-title {
-    display: block !important;
-    text-align: center;
-    border-bottom: 2px solid #0ea5e9;
-    padding-bottom: 15px;
-    margin-bottom: 30px;
-    color: #0f172a !important;
-}
-.pdf-mode .card, .pdf-mode .chart-box, .pdf-mode .table-container {
-    background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
-    box-shadow: none !important;
-    color: #0f172a !important;
-}
-.pdf-mode .card h3, .pdf-mode .chart-box h3, .pdf-mode .table-container h3 {
-    color: #475569 !important;
-}
-.pdf-mode .card p { color: #0ea5e9 !important; }
-.pdf-mode table th {
-    background: #f8fafc !important;
-    color: #334155 !important;
-    border-bottom: 2px solid #cbd5e1 !important;
-}
-.pdf-mode table td {
-    color: #0f172a !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-}
-.pdf-mode canvas {
-    background: #ffffff !important;
-}
+.pdf-mode { background: #ffffff !important; color: #000000 !important; padding: 30px !important; font-family: 'Segoe UI', sans-serif !important; }
+.pdf-mode .pdf-title { display: block !important; text-align: center; border-bottom: 2px solid var(--primary-color); padding-bottom: 15px; margin-bottom: 30px; color: #0f172a !important; }
+.pdf-mode .card, .pdf-mode .chart-box, .pdf-mode .table-container { background: #ffffff !important; border: 1px solid #e2e8f0 !important; box-shadow: none !important; color: #0f172a !important; }
+.pdf-mode .card h3, .pdf-mode .chart-box h3, .pdf-mode .table-container h3 { color: #475569 !important; }
+.pdf-mode .card p { color: var(--primary-color) !important; }
+.pdf-mode table th { background: #f8fafc !important; color: #334155 !important; border-bottom: 2px solid #cbd5e1 !important; }
+.pdf-mode table td { color: #0f172a !important; border-bottom: 1px solid #e2e8f0 !important; }
+.pdf-mode canvas { background: #ffffff !important; }
+
+/* APP FOOTER */
+.app-footer { margin-top: auto; padding-top: 30px; text-align: center; color: #94a3b8; font-size: 0.8em; }
+.app-footer p { margin: 5px 0; }
+.app-footer i { color: var(--primary-color); margin-right: 5px; }
 
 @media(max-width:768px){
     .sidebar { display:none; }
@@ -107,11 +105,25 @@ button:hover { transform: scale(1.02); background: #0ea5e9; }
 
 <body>
 
+<!-- GLOBAL THEME ENGINE INITIALIZATION -->
+<script>
+    (function initTheme() {
+        let s = JSON.parse(localStorage.getItem("settings")) || {};
+        if(s.themeColor) document.documentElement.style.setProperty('--primary-color', s.themeColor);
+        if(s.themeFont) document.documentElement.style.setProperty('--app-font', s.themeFont);
+        if(s.themeFontSize) document.documentElement.style.setProperty('--app-font-size', s.themeFontSize);
+        if(s.themeBgColor) document.documentElement.style.setProperty('--bg-color', s.themeBgColor);
+    })();
+</script>
+
 <div class="dashboard">
 
     <!-- SIDEBAR -->
     <div class="sidebar no-print">
-        <h2>ClubAd</h2>
+        <div style="text-align: center; margin-bottom: 30px;">
+            <img id="sidebarLogo" style="max-width: 80px; max-height: 80px; display: none; margin: 0 auto 10px auto; object-fit: contain;">
+            <h2 id="sidebarName" style="color: var(--primary-color); margin: 0; font-size: 1.4em;">ClubAd</h2>
+        </div>
         <a href="index.html"><i class="fa fa-home"></i> Dashboard</a>
         <a href="services.html"><i class="fa fa-cogs"></i> Services</a>
         <a href="customers.html"><i class="fa fa-users"></i> Customers</a>
@@ -128,7 +140,7 @@ button:hover { transform: scale(1.02); background: #0ea5e9; }
         <div class="topbar no-print">
             <div class="topbar-left">
                 <h1>Dashboard Overview</h1>
-                <span id="todayDate" style="color: #94a3b8; font-weight: 500;"></span>
+                <span id="todayDate" style="color: #94a3b8; font-weight: 500; font-size: 0.9em;"></span>
             </div>
             <button class="btn-pdf" onclick="downloadPDF()"><i class="fa fa-file-pdf"></i> Download Executive PDF</button>
         </div>
@@ -137,8 +149,8 @@ button:hover { transform: scale(1.02); background: #0ea5e9; }
         <div id="printableDashboard">
             
             <div class="pdf-title" style="display: none;">
-                <h1 style="margin: 0;">Executive Dashboard Report</h1>
-                <p style="margin: 5px 0 0 0; font-size: 14px; color: #64748b;" id="pdfDateStamp"></p>
+                <h1 id="pdfHeaderTitle" style="margin: 0; font-size: 1.8em;">ClubAd - Executive Dashboard</h1>
+                <p style="margin: 5px 0 0 0; font-size: 0.9em; color: #64748b;" id="pdfDateStamp"></p>
             </div>
 
             <!-- CARDS -->
@@ -170,12 +182,11 @@ button:hover { transform: scale(1.02); background: #0ea5e9; }
             <!-- RECENT TRANSACTIONS TABLE -->
             <div class="table-container">
                 
-                <!-- HEADER WITH SORTING -->
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                     <h3>Transaction History</h3>
                     <div class="no-print" style="display: flex; align-items: center; gap: 10px;">
-                        <span style="font-size: 14px; color: #94a3b8;">Sort By:</span>
-                        <select id="sortOrder" onchange="loadRecent()" style="padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: #fff; cursor: pointer;">
+                        <span style="font-size: 0.9em; color: #94a3b8;">Sort By:</span>
+                        <select id="sortOrder" onchange="loadRecent()" style="padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: #fff; cursor: pointer; font-family: inherit; font-size: 0.9em;">
                             <option value="newest">Date: Newest First</option>
                             <option value="oldest">Date: Oldest First</option>
                             <option value="high">Amount: High to Low</option>
@@ -203,7 +214,13 @@ button:hover { transform: scale(1.02); background: #0ea5e9; }
             </div>
 
         </div>
-        <!-- END PRINTABLE AREA -->
+
+        <!-- UNIVERSAL FOOTER -->
+        <div class="app-footer no-print">
+            <p>&copy; 2026 <span class="footer-brand-name">ClubAd</span>. All rights reserved.</p>
+            <p><i class="fab fa-whatsapp"></i> For any queries WhatsApp: 6235531823 | <i class="fa fa-envelope"></i> clubad.in@gmail.com</p>
+            <p style="font-size: 0.8em; margin-top: 8px; color: #64748b; letter-spacing: 1px;">DEVELOPED BY BASITH PARAVOOR</p>
+        </div>
 
     </div>
 </div>
@@ -277,9 +294,33 @@ button:hover { transform: scale(1.02); background: #0ea5e9; }
 </div>
 
 <script>
+// --- GLOBAL BRANDING ENGINE ---
+function applyBranding() {
+    let s = JSON.parse(localStorage.getItem("settings")) || {};
+    let bName = s.name || "ClubAd";
+    
+    let sNameEl = document.getElementById("sidebarName");
+    if(sNameEl) sNameEl.innerText = bName;
+    
+    let sLogoEl = document.getElementById("sidebarLogo");
+    if(sLogoEl && s.logo) {
+        sLogoEl.src = s.logo;
+        sLogoEl.style.display = "block";
+    }
+    
+    if(document.title.includes("ClubAd")) {
+        document.title = document.title.replace("ClubAd", bName);
+    }
+
+    document.querySelectorAll(".footer-brand-name").forEach(el => el.innerText = bName);
+    return bName;
+}
+let currentBusinessName = applyBranding();
+
 // INITIALIZE DATE
 document.getElementById("todayDate").innerText = new Date().toLocaleDateString();
 document.getElementById("pdfDateStamp").innerText = "Generated on: " + new Date().toLocaleDateString();
+document.getElementById("pdfHeaderTitle").innerText = currentBusinessName + " - Executive Dashboard";
 
 // 1. LOAD DASHBOARD DATA
 function loadDashboard(){
@@ -301,15 +342,14 @@ function loadDashboard(){
         if((total - advance) > 0) pending += (total - advance);
     });
 
-    // Fix card text colors strictly to avoid overriding in PDF mode later
     document.getElementById("totalCustomers").style.color = "#fff";
     document.getElementById("totalServices").style.color = "#fff";
 
     document.getElementById("totalRevenue").innerText = "₹" + revenue.toFixed(2);
     document.getElementById("pendingPayments").innerText = "₹" + pending.toFixed(2);
 
-    loadRecent(); // Load table
-    drawChart(orders); // Load Chart
+    loadRecent(); 
+    drawChart(orders); 
 }
 
 // 2. LOAD & SORT RECENT TRANSACTIONS
@@ -325,10 +365,8 @@ function loadRecent(){
         return;
     }
 
-    // Map original index so Edit/Delete works perfectly no matter how we sort
     let mappedOrders = orders.map((o, i) => ({ ...o, originalIndex: i }));
     
-    // Sort logic
     mappedOrders.sort((a, b) => {
         let dateA = new Date(a.date).getTime() || 0;
         let dateB = new Date(b.date).getTime() || 0;
@@ -341,7 +379,6 @@ function loadRecent(){
         if(sortType === 'low') return totalA - totalB;
     });
     
-    // Display top 10 results
     let displayOrders = mappedOrders.slice(0, 10);
 
     displayOrders.forEach(o => {
@@ -391,11 +428,16 @@ function drawChart(orders){
     ctx.clearRect(0, 0, width, height);
     let barWidth = width / 12;
 
+    // Fetch dynamic primary color for the chart gradient
+    let primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || "#38bdf8";
+
     months.forEach((val, i) => {
         let barHeight = (val / max) * height;
         let gradient = ctx.createLinearGradient(0, height, 0, height - barHeight);
-        gradient.addColorStop(0, "#0ea5e9");
-        gradient.addColorStop(1, "#38bdf8");
+        
+        // Use the brand color for the charts
+        gradient.addColorStop(0, primaryColor);
+        gradient.addColorStop(1, primaryColor);
         
         ctx.fillStyle = gradient;
         ctx.fillRect((i * barWidth) + 4, height - barHeight, barWidth - 8, barHeight);
@@ -477,10 +519,7 @@ function saveEdit() {
     }
 
     orders[index] = {
-        ...orders[index], // Preserves any other hidden fields we might add later
-        id: document.getElementById("m_orderId").value,
-        customerId: document.getElementById("m_customerId").value,
-        serviceId: document.getElementById("m_serviceId").value,
+        ...orders[index],
         date: finalDate.toISOString(),
         customerName: document.getElementById("m_customerName").value.trim(),
         serviceName: document.getElementById("m_serviceName").value.trim(),
@@ -503,33 +542,29 @@ function saveEdit() {
 function downloadPDF() {
     let element = document.getElementById('printableDashboard');
     
-    // 1. Temporarily add the light-theme PDF class
     element.classList.add('pdf-mode');
     
-    // 2. Hide unwanted UI elements (dropdowns, edit buttons, etc)
     let noPrintEls = document.querySelectorAll('.no-print');
     noPrintEls.forEach(el => el.style.display = 'none');
     
-    // 3. Remove inline color styles on cards so CSS takes over
     document.getElementById("totalCustomers").style.color = "";
     document.getElementById("totalServices").style.color = "";
 
+    let safeName = currentBusinessName.replace(/ /g, "_");
+
     let opt = {
         margin:       [15, 15, 15, 15], 
-        filename:     'ClubAd_Dashboard_' + new Date().toISOString().split('T')[0] + '.pdf',
+        filename:     `${safeName}_Dashboard_${new Date().toISOString().split('T')[0]}.pdf`,
         image:        { type: 'jpeg', quality: 1.0 },
-        html2canvas:  { scale: 2, backgroundColor: '#ffffff' }, // Force white background
+        html2canvas:  { scale: 2, backgroundColor: '#ffffff' }, 
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak:    { mode: 'avoid-all' }
     };
 
-    // Generate PDF
     html2pdf().set(opt).from(element).save().then(() => {
-        // 4. Restore everything back to Dark Mode
         element.classList.remove('pdf-mode');
         noPrintEls.forEach(el => el.style.display = '');
         
-        // Restore card text colors
         document.getElementById("totalCustomers").style.color = "#fff";
         document.getElementById("totalServices").style.color = "#fff";
     });

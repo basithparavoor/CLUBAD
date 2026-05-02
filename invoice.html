@@ -5,121 +5,133 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Invoice - ClubAd</title>
 
-<!-- FontAwesome & Custom CSS -->
+<!-- FontAwesome & Custom Fonts -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Poppins:wght@400;600;800&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 
 <!-- Essential Libraries: QR Code & PDF Generator -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
+<!-- SYSTEM ACTIVATION SECURITY -->
+<script src="activation.js"></script>
+
 <style>
+/* ==========================================
+   DYNAMIC CSS VARIABLES (THEME ENGINE)
+   ========================================== */
+:root {
+    --primary-color: #38bdf8;
+    --app-font: 'Segoe UI', sans-serif;
+    --app-font-size: 16px;
+    --bg-color: #0f172a;
+}
+
 /* Base structural styles */
-body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #fff; }
+body { margin: 0; font-family: var(--app-font); font-size: var(--app-font-size); background: var(--bg-color); color: #fff; transition: background 0.3s, font-family 0.3s; }
 .dashboard { display: flex; }
 
 /* SIDEBAR */
 .sidebar { width: 250px; background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); height: 100vh; padding: 20px; position: fixed; z-index: 100; display: flex; flex-direction: column; justify-content: space-between;}
-.sidebar h2 { color: #38bdf8; text-align: center; margin-bottom: 30px;}
+.sidebar h2 { color: var(--primary-color); text-align: center; margin-bottom: 30px;}
 .sidebar a { display: block; color: #ccc; padding: 12px; margin: 10px 0; text-decoration: none; border-radius: 10px; transition: 0.3s; }
 .sidebar a:hover { background: rgba(255,255,255,0.1); color: #fff; }
-.developer-credit { text-align: center; font-size: 11px; color: #64748b; letter-spacing: 1px; margin-top: auto; padding-top: 20px;}
 
 /* MAIN */
-.main { margin-left: 270px; padding: 20px; width: 100%; display: flex; flex-direction: column; align-items: center;}
+.main { margin-left: 270px; padding: 20px; width: 100%; display: flex; flex-direction: column; align-items: center; min-height: 100vh;}
 
-/* =========================================
-   SCALABLE SEARCH CONTROLS (NEW)
-   ========================================= */
+/* SCALABLE SEARCH CONTROLS */
 .controls-container { width: 100%; max-width: 850px; display: flex; gap: 15px; margin-bottom: 20px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); align-items: flex-start;}
 .search-wrapper { flex: 1; position: relative; }
-.search-wrapper input { width: 100%; padding: 12px 15px 12px 40px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: #fff; font-size: 16px; outline: none; transition: 0.3s; box-sizing: border-box;}
-.search-wrapper input:focus { border-color: #38bdf8; background: rgba(0,0,0,0.5); }
+.search-wrapper input { width: 100%; padding: 12px 15px 12px 40px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: #fff; font-size: 0.9em; outline: none; transition: 0.3s; box-sizing: border-box; font-family: inherit;}
+.search-wrapper input:focus { border-color: var(--primary-color); background: rgba(0,0,0,0.5); }
 .search-wrapper i { position: absolute; left: 15px; top: 15px; color: #94a3b8; }
 
-/* The dropdown results list */
-.search-results { position: absolute; top: 100%; left: 0; right: 0; background: #0f172a; border: 1px solid #38bdf8; border-radius: 10px; margin-top: 5px; max-height: 250px; overflow-y: auto; z-index: 50; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.7); }
+/* Dropdown results list */
+.search-results { position: absolute; top: 100%; left: 0; right: 0; background: var(--bg-color); border: 1px solid var(--primary-color); border-radius: 10px; margin-top: 5px; max-height: 280px; overflow-y: auto; z-index: 50; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.7); }
 .result-item { padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center;}
-.result-item:hover { background: rgba(56, 189, 248, 0.1); }
+.result-item:hover { background: rgba(255,255,255,0.05); }
 .result-item:last-child { border-bottom: none; }
-.result-name { font-weight: bold; color: #fff; display: block; }
-.result-meta { font-size: 12px; color: #94a3b8; }
-.result-date { font-size: 12px; color: #38bdf8; background: rgba(56, 189, 248, 0.1); padding: 3px 8px; border-radius: 5px;}
+.result-name { font-weight: bold; color: #fff; display: block; margin-bottom: 3px;}
+.result-meta { font-size: 0.8em; color: #94a3b8; }
+.result-date { font-size: 0.8em; color: var(--primary-color); background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 5px; font-weight: bold;}
 
 .btn-group { display: flex; gap: 10px; }
-button { padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; transition: 0.3s; font-weight: bold; font-size: 15px; display: flex; align-items: center; gap: 8px; }
-button:hover { transform: scale(1.02); }
-.btn-print { background: #38bdf8; color: #000; }
+button { padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; transition: 0.3s; font-weight: bold; font-size: 0.9em; display: flex; align-items: center; gap: 8px; font-family: inherit;}
+button:hover { transform: scale(1.02); filter: brightness(1.1);}
+.btn-print { background: var(--primary-color); color: #000; }
 .btn-pdf { background: #ef4444; color: #fff; }
 
-/* =========================================
-   PROFESSIONAL INVOICE DOCUMENT
-   ========================================= */
+/* PROFESSIONAL INVOICE DOCUMENT */
 .invoice-wrapper { background: #ffffff; color: #0f172a; width: 100%; max-width: 850px; padding: 50px; border-radius: 15px; box-shadow: 0 15px 50px rgba(0,0,0,0.5); box-sizing: border-box; position: relative; overflow: hidden; }
 
 /* Watermark Stamp Graphic */
-.invoice-stamp { position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 100px; font-weight: 900; text-transform: uppercase; letter-spacing: 10px; opacity: 0; pointer-events: none; z-index: 0; border: 8px solid; padding: 10px 30px; border-radius: 20px; }
-.stamp-paid { color: rgba(34, 197, 94, 0.15); border-color: rgba(34, 197, 94, 0.15); opacity: 1; }
-.stamp-pending { color: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.1); opacity: 1; }
+.invoice-stamp { position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 90px; font-weight: 900; text-transform: uppercase; letter-spacing: 10px; opacity: 0; pointer-events: none; z-index: 0; border: 8px solid; padding: 10px 30px; border-radius: 20px; white-space: nowrap;}
+.stamp-paid { color: rgba(34, 197, 94, 0.12); border-color: rgba(34, 197, 94, 0.12); opacity: 1; }
+.stamp-pending { color: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.08); opacity: 1; }
 
 .invoice-content { position: relative; z-index: 1; }
 
 /* Header Elements */
-.doc-header { display: flex; justify-content: space-between; border-bottom: 3px solid #0ea5e9; padding-bottom: 20px; margin-bottom: 30px; }
+.doc-header { display: flex; justify-content: space-between; border-bottom: 3px solid var(--primary-color); padding-bottom: 20px; margin-bottom: 30px; }
 .brand-section { display: flex; flex-direction: column; gap: 10px; }
-.brand-logo { max-width: 120px; max-height: 80px; display: none; object-fit: contain; }
-.brand-name { font-size: 26px; font-weight: 800; color: #0f172a; margin: 0; text-transform: uppercase;}
-.brand-details { font-size: 13px; color: #475569; line-height: 1.5; }
+.brand-logo { max-width: 140px; max-height: 80px; display: none; object-fit: contain; }
+.brand-name { font-size: 1.6em; font-weight: 800; color: #0f172a; margin: 0; text-transform: uppercase;}
+.brand-details { font-size: 0.85em; color: #475569; line-height: 1.5; }
 
 .meta-section { text-align: right; }
-.invoice-title { font-size: 36px; font-weight: 900; color: #0ea5e9; margin: 0 0 10px 0; letter-spacing: 2px; }
-.meta-grid { display: grid; grid-template-columns: auto auto; gap: 5px 15px; font-size: 14px; justify-content: right; }
+.invoice-title { font-size: 2.2em; font-weight: 900; color: var(--primary-color); margin: 0 0 10px 0; letter-spacing: 2px; }
+.meta-grid { display: grid; grid-template-columns: auto auto; gap: 5px 15px; font-size: 0.9em; justify-content: right; }
 .meta-grid strong { color: #334155; }
 
 /* Bill To Section */
 .billing-section { display: flex; justify-content: space-between; margin-bottom: 30px; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; }
-.bill-to h3 { margin: 0 0 10px 0; font-size: 14px; color: #64748b; text-transform: uppercase; letter-spacing: 1px;}
-.bill-to p { margin: 3px 0; font-size: 15px; color: #0f172a; }
-.bill-to .client-name { font-size: 20px; font-weight: bold; color: #0ea5e9; margin-bottom: 8px;}
+.bill-to h3 { margin: 0 0 10px 0; font-size: 0.9em; color: #64748b; text-transform: uppercase; letter-spacing: 1px;}
+.bill-to p { margin: 3px 0; font-size: 0.95em; color: #0f172a; }
+.bill-to .client-name { font-size: 1.25em; font-weight: bold; color: var(--primary-color); margin-bottom: 8px;}
+.badge-id-light { background: #e0f2fe; color: #0284c7; padding: 2px 6px; border-radius: 4px; font-size: 0.75em; font-weight: bold;}
 
 /* Main Table */
 .invoice-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-.invoice-table th { background: #0f172a; color: #ffffff; padding: 12px 15px; text-align: left; font-size: 14px; text-transform: uppercase; }
-.invoice-table td { padding: 15px; border-bottom: 1px solid #cbd5e1; font-size: 15px; color: #1e293b; }
+.invoice-table th { background: #0f172a; color: #ffffff; padding: 12px 15px; text-align: left; font-size: 0.9em; text-transform: uppercase; border-bottom: none !important;}
+.invoice-table td { padding: 15px; border-bottom: 1px solid #cbd5e1; font-size: 0.95em; color: #1e293b; }
 .invoice-table th.right, .invoice-table td.right { text-align: right; }
-.item-desc { font-weight: 600; color: #0f172a; display: block; }
-.item-meta { font-size: 12px; color: #64748b; margin-top: 4px; display: block;}
+.item-desc { font-weight: 600; color: #0f172a; display: block; font-size: 1em; margin-bottom: 4px;}
+.item-meta { font-size: 0.8em; color: #64748b; display: block;}
 
 /* Totals Area */
 .totals-wrapper { display: flex; justify-content: space-between; align-items: flex-start; }
 .qr-container { text-align: center; border: 1px dashed #cbd5e1; padding: 15px; border-radius: 10px; background: #f8fafc; width: 140px; display: none;}
-.qr-container p { margin: 0 0 10px 0; font-size: 12px; font-weight: bold; color: #475569; }
+.qr-container p { margin: 0 0 10px 0; font-size: 0.8em; font-weight: bold; color: #475569; }
 .qr-code { margin: 0 auto; }
 
 .totals-grid { width: 350px; }
-.total-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 15px; color: #475569; border-bottom: 1px solid #f1f5f9; }
-.total-row.grand-total { font-size: 20px; font-weight: 800; color: #0f172a; border-top: 2px solid #cbd5e1; border-bottom: none; padding-top: 15px; margin-top: 5px;}
-.total-row.balance { font-size: 18px; font-weight: bold; color: #ef4444; background: #fef2f2; padding: 10px; border-radius: 6px; margin-top: 10px; border: 1px solid #fecaca;}
+.total-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 0.95em; color: #475569; border-bottom: 1px solid #f1f5f9; }
+.total-row.grand-total { font-size: 1.25em; font-weight: 800; color: #0f172a; border-top: 2px solid #cbd5e1; border-bottom: none; padding-top: 15px; margin-top: 5px;}
+.total-row.balance { font-size: 1.1em; font-weight: bold; color: #ef4444; background: #fef2f2; padding: 10px; border-radius: 6px; margin-top: 10px; border: 1px solid #fecaca;}
 .total-row.balance.paid { color: #166534; background: #f0fdf4; border-color: #bbf7d0;}
 
 /* Footer */
-.invoice-footer { margin-top: 40px; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px; color: #64748b; font-size: 13px; }
+.invoice-footer { margin-top: 40px; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px; color: #64748b; font-size: 0.85em; }
 .footer-note { font-weight: bold; color: #0f172a; margin-bottom: 5px; }
 
-/* =========================================
-   1-PAGE PDF COMPRESSION CLASSES
-   ========================================= */
-.pdf-mode { padding: 30px !important; }
+/* 1-PAGE PDF COMPRESSION CLASSES */
+.pdf-mode { padding: 30px !important; font-family: 'Segoe UI', sans-serif !important; }
 .pdf-mode .doc-header { margin-bottom: 20px !important; padding-bottom: 10px !important; }
 .pdf-mode .billing-section { margin-bottom: 20px !important; padding: 15px !important; }
 .pdf-mode .invoice-table { margin-bottom: 20px !important; }
 .pdf-mode .invoice-table td { padding: 10px 15px !important; }
 .pdf-mode .invoice-footer { margin-top: 30px !important; padding-top: 10px !important; }
-.pdf-mode .invoice-stamp { transform: translate(-50%, -50%) rotate(-30deg) scale(0.8); }
+
+/* APP FOOTER */
+.app-footer { margin-top: auto; padding-top: 30px; text-align: center; color: #94a3b8; font-size: 0.8em; width: 100%;}
+.app-footer p { margin: 5px 0; }
+.app-footer i { color: var(--primary-color); margin-right: 5px; }
 
 @media print {
     body { background: #fff; padding: 0; }
-    .sidebar, .controls-container { display: none !important; }
+    .sidebar, .controls-container, .app-footer { display: none !important; }
     .main { margin: 0; padding: 0; }
     .invoice-wrapper { box-shadow: none; border-radius: 0; padding: 20px; max-width: 100%; }
 }
@@ -137,12 +149,26 @@ button:hover { transform: scale(1.02); }
 
 <body>
 
+<!-- GLOBAL THEME ENGINE INITIALIZATION -->
+<script>
+    (function initTheme() {
+        let s = JSON.parse(localStorage.getItem("settings")) || {};
+        if(s.themeColor) document.documentElement.style.setProperty('--primary-color', s.themeColor);
+        if(s.themeFont) document.documentElement.style.setProperty('--app-font', s.themeFont);
+        if(s.themeFontSize) document.documentElement.style.setProperty('--app-font-size', s.themeFontSize);
+        if(s.themeBgColor) document.documentElement.style.setProperty('--bg-color', s.themeBgColor);
+    })();
+</script>
+
 <div class="dashboard">
 
 <!-- SIDEBAR -->
 <div class="sidebar no-print">
     <div>
-        <h2>ClubAd</h2>
+        <div style="text-align: center; margin-bottom: 30px;">
+            <img id="sidebarLogo" style="max-width: 80px; max-height: 80px; display: none; margin: 0 auto 10px auto; object-fit: contain;">
+            <h2 id="sidebarName" style="color: var(--primary-color); margin: 0; font-size: 1.4em;">ClubAd</h2>
+        </div>
         <a href="index.html"><i class="fa fa-home"></i> Dashboard</a>
         <a href="services.html"><i class="fa fa-cogs"></i> Services</a>
         <a href="customers.html"><i class="fa fa-users"></i> Customers</a>
@@ -151,7 +177,6 @@ button:hover { transform: scale(1.02); }
         <a href="reports.html"><i class="fa fa-chart-line"></i> Reports</a>
         <a href="settings.html"><i class="fa fa-gear"></i> Settings</a>
     </div>
-    <div class="developer-credit">DEVELOPED BY BASITH PARAVOOR</div>
 </div>
 
 <!-- MAIN -->
@@ -162,7 +187,7 @@ button:hover { transform: scale(1.02); }
     <!-- SMART SEARCH COMPONENT -->
     <div class="search-wrapper">
         <i class="fa fa-search"></i>
-        <input type="text" id="orderSearchInput" placeholder="Search orders by Name, Phone, or Service..." onkeyup="filterOrders()" onclick="filterOrders()">
+        <input type="text" id="orderSearchInput" placeholder="Search by Order ID (ORD-XXX), Name, or Service..." onkeyup="filterOrders()" onclick="filterOrders()">
         <div id="orderDropdownList" class="search-results">
             <!-- Results injected here -->
         </div>
@@ -197,7 +222,7 @@ button:hover { transform: scale(1.02); }
                 <div class="meta-grid">
                     <strong>Invoice No:</strong> <span id="invoiceNo">INV-0000</span>
                     <strong>Date:</strong> <span id="date">--/--/----</span>
-                    <strong>Status:</strong> <span id="paymentStatus" style="font-weight: bold; color: #0ea5e9;">Unpaid</span>
+                    <strong>Status:</strong> <span id="paymentStatus" style="font-weight: bold; color: var(--primary-color);">Unpaid</span>
                 </div>
             </div>
         </div>
@@ -206,12 +231,12 @@ button:hover { transform: scale(1.02); }
         <div class="billing-section">
             <div class="bill-to">
                 <h3>Billed To:</h3>
-                <p class="client-name" id="customerName">Client Name</p>
+                <p class="client-name" id="customerName" style="color: var(--primary-color);">Client Name</p>
                 <p><strong>Mobile:</strong> <span id="customerMobile">N/A</span></p>
             </div>
             <div class="bill-to" style="text-align: right;">
                 <h3>Payment Mode:</h3>
-                <p style="font-weight: bold; font-size: 18px; color: #0f172a;" id="paymentModeType">-</p>
+                <p style="font-weight: bold; font-size: 1.2em; color: #0f172a;" id="paymentModeType">-</p>
             </div>
         </div>
 
@@ -226,7 +251,7 @@ button:hover { transform: scale(1.02); }
             </thead>
             <tbody id="items">
                 <tr>
-                    <td colspan="3" style="text-align: center; color: #94a3b8; padding: 40px;">Search and select an order to generate invoice</td>
+                    <td colspan="3" style="text-align: center; color: #94a3b8; padding: 40px; font-style: italic;">Search and select an order to generate invoice</td>
                 </tr>
             </tbody>
         </table>
@@ -278,20 +303,50 @@ button:hover { transform: scale(1.02); }
     </div>
 </div>
 
+<!-- UNIVERSAL FOOTER -->
+<div class="app-footer no-print">
+    <p>&copy; 2026 <span class="footer-brand-name">ClubAd</span>. All rights reserved.</p>
+    <p><i class="fab fa-whatsapp"></i> For any queries WhatsApp: 6235531823 | <i class="fa fa-envelope"></i> clubad.in@gmail.com</p>
+    <p style="font-size: 0.85em; margin-top: 8px; color: #64748b; letter-spacing: 1px;">DEVELOPED BY BASITH PARAVOOR</p>
+</div>
+
 </div>
 </div>
 
 <script>
+// --- GLOBAL BRANDING ENGINE ---
+function applyBranding() {
+    let s = JSON.parse(localStorage.getItem("settings")) || {};
+    let bName = s.name || "ClubAd";
+    
+    let sNameEl = document.getElementById("sidebarName");
+    if(sNameEl) sNameEl.innerText = bName;
+    
+    let sLogoEl = document.getElementById("sidebarLogo");
+    if(sLogoEl && s.logo) {
+        sLogoEl.src = s.logo;
+        sLogoEl.style.display = "block";
+    }
+    
+    if(document.title.includes("ClubAd")) {
+        document.title = document.title.replace("ClubAd", bName);
+    }
+
+    document.querySelectorAll(".footer-brand-name").forEach(el => el.innerText = bName);
+    return bName;
+}
+let currentBusinessName = applyBranding();
+
 let currentSelectedOrderIndex = null;
 
-// LOAD BUSINESS SETTINGS
+// LOAD BUSINESS SETTINGS INTO INVOICE
 function loadSettings(){
     let s = JSON.parse(localStorage.getItem("settings")) || {};
-    let bName = s.name || "ClubAd Travels & Online Services";
+    let bName = s.name || "ClubAd";
     
     document.getElementById("businessName").innerText = bName;
     document.getElementById("footerBrand").innerText = bName;
-    document.getElementById("businessAddress").innerText = s.address || "Kerala, India";
+    document.getElementById("businessAddress").innerText = s.address || "Address details not configured";
     document.getElementById("gstNo").innerText = s.gst || "N/A";
     document.getElementById("phoneNo").innerText = s.phone || "N/A";
 
@@ -302,9 +357,7 @@ function loadSettings(){
     }
 }
 
-// ==========================================
 // SCALABLE SEARCH LOGIC
-// ==========================================
 function filterOrders() {
     let input = document.getElementById("orderSearchInput").value.toLowerCase();
     let dropdown = document.getElementById("orderDropdownList");
@@ -312,40 +365,39 @@ function filterOrders() {
     
     dropdown.innerHTML = "";
     
-    // Map array to remember the original DB index, then reverse so newest are at the top
     let mappedOrders = orders.map((o, i) => ({ ...o, originalIndex: i })).reverse();
     
     let matches = mappedOrders.filter(o => {
+        let oId = (o.id || "ORD-LEGACY").toLowerCase();
         let name = (o.customerName || "").toLowerCase();
         let phone = (o.customerMobile || "").toLowerCase();
         let service = (o.serviceName || "").toLowerCase();
-        return name.includes(input) || phone.includes(input) || service.includes(input);
+        return oId.includes(input) || name.includes(input) || phone.includes(input) || service.includes(input);
     });
 
     if (matches.length === 0) {
-        dropdown.innerHTML = `<div style="padding: 15px; color: #94a3b8; text-align: center;">No orders found.</div>`;
+        dropdown.innerHTML = `<div style="padding: 15px; color: #94a3b8; text-align: center;">No orders found matching "${input}".</div>`;
         dropdown.style.display = "block";
         return;
     }
 
-    // Limit to top 20 results for performance
     matches.slice(0, 20).forEach(o => {
         let dateStr = o.date ? new Date(o.date).toLocaleDateString() : "N/A";
+        let oId = o.id || "ORD-LEGACY";
         
         let item = document.createElement("div");
         item.className = "result-item";
         item.innerHTML = `
             <div>
-                <span class="result-name">${o.customerName}</span>
+                <span class="result-name"><span style="color: var(--primary-color);">[${oId}]</span> ${o.customerName}</span>
                 <span class="result-meta">${o.serviceName} | ${o.customerMobile || "No Phone"}</span>
             </div>
             <div class="result-date">${dateStr}</div>
         `;
         
-        // When clicked, load this specific invoice
         item.onclick = function() {
             currentSelectedOrderIndex = o.originalIndex;
-            document.getElementById("orderSearchInput").value = `${o.customerName} - ${o.serviceName}`;
+            document.getElementById("orderSearchInput").value = `[${oId}] ${o.customerName} - ${o.serviceName}`;
             dropdown.style.display = "none";
             loadInvoice(o.originalIndex);
         };
@@ -356,47 +408,45 @@ function filterOrders() {
     dropdown.style.display = "block";
 }
 
-// Hide dropdown when clicking outside
 document.addEventListener("click", function(e) {
     if(!e.target.closest(".search-wrapper")) {
         document.getElementById("orderDropdownList").style.display = "none";
     }
 });
 
-// ==========================================
 // RENDER INVOICE LOGIC
-// ==========================================
 function loadInvoice(index){
     let orders = JSON.parse(localStorage.getItem("orders")) || [];
     let o = orders[index];
     if(!o) return;
     
-    // Core details
-    let invoiceNumber = parseInt(index) + 1;
-    document.getElementById("invoiceNo").innerText = "INV-" + invoiceNumber.toString().padStart(4, '0');
+    let displayInvoiceNo = o.id ? o.id.replace('ORD', 'INV') : "INV-" + (parseInt(index) + 1).toString().padStart(4, '0');
+    
+    document.getElementById("invoiceNo").innerText = displayInvoiceNo;
     document.getElementById("date").innerText = new Date(o.date).toLocaleDateString();
-    document.getElementById("customerName").innerText = o.customerName || "N/A";
+    
+    let custBadge = o.customerId ? `<span class="badge-id-light" style="margin-left: 10px;">${o.customerId}</span>` : '';
+    document.getElementById("customerName").innerHTML = `${o.customerName || "N/A"} ${custBadge}`;
     document.getElementById("customerMobile").innerText = o.customerMobile || "N/A";
     document.getElementById("paymentModeType").innerText = o.paymentMode || "Cash";
 
-    // Item Table
     let base = parseFloat(o.baseCost) || 0;
     let charge = parseFloat(o.serviceCharge) || 0;
     let extra = parseFloat(o.extra) || 0;
     let itemSubtotal = base + charge + extra;
+    let srvBadge = o.serviceId ? `[${o.serviceId}] ` : '';
 
     document.getElementById("items").innerHTML = `
         <tr>
             <td>1</td>
             <td>
-                <span class="item-desc">${o.serviceName || "Service"}</span>
-                <span class="item-meta">Base: ₹${base.toFixed(2)} | Charge: ₹${charge.toFixed(2)} | Extra: ₹${extra.toFixed(2)}</span>
+                <span class="item-desc">${srvBadge}${o.serviceName || "Service"}</span>
+                <span class="item-meta">Base Cost: ₹${base.toFixed(2)} | Service Charge: ₹${charge.toFixed(2)} | Extra: ₹${extra.toFixed(2)}</span>
             </td>
             <td class="right">₹${itemSubtotal.toFixed(2)}</td>
         </tr>
     `;
 
-    // Totals
     let gstVal = parseFloat(o.gst) || 0;
     let gstAmt = itemSubtotal * (gstVal / 100);
     let discount = parseFloat(o.discount) || 0;
@@ -411,7 +461,6 @@ function loadInvoice(index){
     document.getElementById("paid").innerText = "₹" + advance.toFixed(2);
     document.getElementById("balance").innerText = "₹" + balance.toFixed(2);
 
-    // Apply Smart UI Logic (Stamps & QR)
     let stamp = document.getElementById("invoiceStamp");
     let balanceRow = document.getElementById("balanceRow");
     let paymentStatus = document.getElementById("paymentStatus");
@@ -448,41 +497,38 @@ function generateQR(amount){
         document.getElementById("qrPlaceholder").style.display = "block";
         return; 
     }
-    let businessName = encodeURIComponent(settings.name || "ClubAd");
-    let upiURL = `upi://pay?pa=${upi}&pn=${businessName}&am=${amount}&cu=INR`;
+    let biz = encodeURIComponent(settings.name || "Business");
+    let upiURL = `upi://pay?pa=${upi}&pn=${biz}&am=${amount}&cu=INR`;
     new QRCode(qrContainer, { text: upiURL, width: 100, height: 100 });
 }
 
-// ==========================================
 // 1-PAGE COMPRESSED PDF EXPORT
-// ==========================================
 function downloadCompressedPDF() {
     if(currentSelectedOrderIndex === null) { 
         alert("Please search and select an order first."); 
         return; 
     }
     
+    let orders = JSON.parse(localStorage.getItem("orders")) || [];
+    let o = orders[currentSelectedOrderIndex];
     let element = document.getElementById('printableInvoice');
-    let invNumber = parseInt(currentSelectedOrderIndex) + 1;
-    let invStr = "INV-" + invNumber.toString().padStart(4, '0');
     
-    // 1. Add class to tighten margins and force everything to fit on 1 page
+    let displayInvoiceNo = o.id ? o.id.replace('ORD', 'INV') : "INV-" + (parseInt(currentSelectedOrderIndex) + 1).toString().padStart(4, '0');
+    let safeName = currentBusinessName.replace(/ /g, "_");
+    
     element.classList.add('pdf-mode');
-    
-    // Temporarily fix visual borders
     element.style.borderRadius = "0";
     element.style.boxShadow = "none";
 
     let opt = {
-        margin:       [10, 10, 10, 10], // Tighter margins to save space
-        filename:     `ClubAd_Invoice_${invStr}.pdf`,
+        margin:       [10, 10, 10, 10], 
+        filename:     `${safeName}_${displayInvoiceNo}.pdf`,
         image:        { type: 'jpeg', quality: 1.0 },
         html2canvas:  { scale: 2 },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
     html2pdf().set(opt).from(element).save().then(() => {
-        // 2. Remove the compression class to restore the web view
         element.classList.remove('pdf-mode');
         element.style.borderRadius = "15px";
         element.style.boxShadow = "0 15px 50px rgba(0,0,0,0.5)";

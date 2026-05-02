@@ -5,35 +5,50 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Customers - ClubAd</title>
 
-<!-- FontAwesome & Custom CSS -->
+<!-- FontAwesome & Custom Fonts -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Poppins:wght@400;600;800&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 
 <!-- Essential: PDF Generation Library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
+<!-- SYSTEM ACTIVATION SECURITY -->
+<script src="activation.js"></script>
+
 <style>
+/* ==========================================
+   DYNAMIC CSS VARIABLES (THEME ENGINE)
+   ========================================== */
+:root {
+    --primary-color: #38bdf8;
+    --app-font: 'Segoe UI', sans-serif;
+    --app-font-size: 16px;
+    --bg-color: #0f172a;
+}
+
 /* Base structural styles */
-body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #fff; }
+body { margin: 0; font-family: var(--app-font); font-size: var(--app-font-size); background: var(--bg-color); color: #fff; transition: background 0.3s, font-family 0.3s; }
 .dashboard { display: flex; }
 
 /* SIDEBAR */
 .sidebar { width: 250px; background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); height: 100vh; padding: 20px; position: fixed; z-index: 100; }
-.sidebar h2 { color: #38bdf8; }
+.sidebar h2 { color: var(--primary-color); }
 .sidebar a { display: block; color: #ccc; padding: 12px; margin: 10px 0; text-decoration: none; border-radius: 10px; transition: 0.3s; }
 .sidebar a:hover { background: rgba(255,255,255,0.1); color: #fff; }
 
 /* MAIN */
-.main { margin-left: 270px; padding: 20px; width: 100%; }
+.main { margin-left: 270px; padding: 20px; width: 100%; display: flex; flex-direction: column; min-height: 100vh;}
 .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 
 /* FORM */
 .form-box { background: rgba(255,255,255,0.05); padding: 25px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 25px;}
 .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 15px; }
-input, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: #fff; box-sizing: border-box; }
+input, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: #fff; box-sizing: border-box; font-family: inherit; font-size: 0.9em; transition: 0.3s;}
+input:focus, textarea:focus { border-color: var(--primary-color); background: rgba(0,0,0,0.5); outline: none; }
 textarea { resize: vertical; min-height: 80px; }
-button.btn-primary { padding: 12px 20px; border: none; border-radius: 10px; background: #38bdf8; color: #000; cursor: pointer; transition: 0.3s; font-weight: bold; margin-top: 15px;}
-button.btn-primary:hover { transform: scale(1.02); background: #0ea5e9; }
+button.btn-primary { padding: 12px 20px; border: none; border-radius: 10px; background: var(--primary-color); color: #000; cursor: pointer; transition: 0.3s; font-weight: bold; margin-top: 15px; font-family: inherit; font-size: 1em;}
+button.btn-primary:hover { transform: scale(1.02); filter: brightness(1.1); }
 
 /* TOOLBAR (Search & Export) */
 .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 15px; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05);}
@@ -42,7 +57,7 @@ button.btn-primary:hover { transform: scale(1.02); background: #0ea5e9; }
 .search-box i { position: absolute; left: 15px; top: 14px; color: #94a3b8; }
 
 .btn-group { display: flex; gap: 10px; }
-button.btn-export { padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; font-weight: bold; display: flex; align-items: center; gap: 8px; color: #fff; }
+button.btn-export { padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; font-weight: bold; display: flex; align-items: center; gap: 8px; color: #fff; font-family: inherit; font-size: 0.9em;}
 button.btn-export:hover { transform: scale(1.05); }
 .btn-csv { background: #22c55e; }
 .btn-pdf { background: #ef4444; }
@@ -50,25 +65,30 @@ button.btn-export:hover { transform: scale(1.05); }
 /* TABLE */
 .table-box { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; overflow-x: auto; border: 1px solid rgba(255,255,255,0.05);}
 table { width: 100%; border-collapse: collapse; white-space: nowrap; }
-th, td { padding: 15px 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
+th, td { padding: 15px 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9em;}
 th { color: #94a3b8; background: rgba(0,0,0,0.2); }
-.badge-id { background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold; border: 1px solid rgba(56, 189, 248, 0.3);}
-.action-btn { margin-right: 12px; cursor: pointer; transition: 0.2s; color: #94a3b8; font-size: 16px;}
+.badge-id { background: rgba(255,255,255,0.05); color: var(--primary-color); padding: 4px 8px; border-radius: 6px; font-size: 0.8em; font-weight: bold; border: 1px solid var(--primary-color);}
+.action-btn { margin-right: 12px; cursor: pointer; transition: 0.2s; color: #94a3b8; font-size: 1.1em;}
 .action-btn.fa-eye:hover { color: #22c55e; transform: scale(1.2); }
-.action-btn.fa-edit:hover { color: #38bdf8; transform: scale(1.2); }
+.action-btn.fa-edit:hover { color: var(--primary-color); transform: scale(1.2); }
 .action-btn.fa-trash:hover { color: #ef4444; transform: scale(1.2); }
 
 /* MODAL (View Details) */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 1000; display: none; justify-content: center; align-items: center; }
-.modal-content { background: #0f172a; border: 1px solid rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
+.modal-content { background: var(--bg-color); border: 1px solid rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
 .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 20px; }
-.modal-header h2 { margin: 0; color: #38bdf8; }
-.close-btn { background: transparent; color: #fff; font-size: 24px; padding: 0; margin: 0; cursor: pointer; border: none; }
+.modal-header h2 { margin: 0; color: var(--primary-color); font-size: 1.3em;}
+.close-btn { background: transparent; color: #fff; font-size: 1.5em; padding: 0; margin: 0; cursor: pointer; border: none; }
 .close-btn:hover { color: #ef4444; }
 
 .detail-row { margin-bottom: 15px; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; }
-.detail-label { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; display: block;}
-.detail-value { font-size: 16px; color: #fff; margin: 0; white-space: pre-wrap;}
+.detail-label { font-size: 0.8em; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; display: block;}
+.detail-value { font-size: 1em; color: #fff; margin: 0; white-space: pre-wrap;}
+
+/* APP FOOTER */
+.app-footer { margin-top: auto; padding-top: 30px; text-align: center; color: #94a3b8; font-size: 0.8em; }
+.app-footer p { margin: 5px 0; }
+.app-footer i { color: var(--primary-color); margin-right: 5px; }
 
 /* HIDDEN CONTAINER FOR PDF EXPORT */
 #pdfExportContainer { display: none; }
@@ -84,11 +104,25 @@ th { color: #94a3b8; background: rgba(0,0,0,0.2); }
 
 <body>
 
+<!-- GLOBAL THEME ENGINE INITIALIZATION -->
+<script>
+    (function initTheme() {
+        let s = JSON.parse(localStorage.getItem("settings")) || {};
+        if(s.themeColor) document.documentElement.style.setProperty('--primary-color', s.themeColor);
+        if(s.themeFont) document.documentElement.style.setProperty('--app-font', s.themeFont);
+        if(s.themeFontSize) document.documentElement.style.setProperty('--app-font-size', s.themeFontSize);
+        if(s.themeBgColor) document.documentElement.style.setProperty('--bg-color', s.themeBgColor);
+    })();
+</script>
+
 <div class="dashboard">
 
 <!-- SIDEBAR -->
-<div class="sidebar">
-    <h2>ClubAd</h2>
+<div class="sidebar no-print">
+    <div style="text-align: center; margin-bottom: 30px;">
+        <img id="sidebarLogo" style="max-width: 80px; max-height: 80px; display: none; margin: 0 auto 10px auto; object-fit: contain;">
+        <h2 id="sidebarName" style="color: var(--primary-color); margin: 0; font-size: 1.4em;">ClubAd</h2>
+    </div>
     <a href="index.html"><i class="fa fa-home"></i> Dashboard</a>
     <a href="services.html"><i class="fa fa-cogs"></i> Services</a>
     <a href="customers.html"><i class="fa fa-users"></i> Customers</a>
@@ -109,7 +143,7 @@ th { color: #94a3b8; background: rgba(0,0,0,0.2); }
 <div class="form-box">
     <div class="form-grid">
         <input type="hidden" id="editIndex">
-        <input type="hidden" id="customerIdStr"> <!-- Hidden field for maintaining ID during edits -->
+        <input type="hidden" id="customerIdStr"> 
         <input type="text" id="name" placeholder="Customer Name (Required)">
         <input type="text" id="mobile" placeholder="Mobile Number">
         <input type="email" id="email" placeholder="Email Address">
@@ -128,7 +162,7 @@ th { color: #94a3b8; background: rgba(0,0,0,0.2); }
     </div>
     <div class="btn-group">
         <button class="btn-export btn-csv" onclick="exportDatabaseCSV()"><i class="fa fa-file-excel"></i> Export All (CSV)</button>
-        <button class="btn-export btn-pdf" onclick="generateAllPDFCards()"><i class="fa fa-file-pdf"></i> Export All Profiles (PDF)</button>
+        <button class="btn-export btn-pdf" onclick="generateAllPDFCards()"><i class="fa fa-file-pdf"></i> Export Profiles (PDF)</button>
     </div>
 </div>
 
@@ -148,6 +182,13 @@ th { color: #94a3b8; background: rgba(0,0,0,0.2); }
     </table>
 </div>
 
+<!-- UNIVERSAL FOOTER -->
+<div class="app-footer no-print">
+    <p>&copy; 2026 <span class="footer-brand-name">ClubAd</span>. All rights reserved.</p>
+    <p><i class="fab fa-whatsapp"></i> For any queries WhatsApp: 6235531823 | <i class="fa fa-envelope"></i> clubad.in@gmail.com</p>
+    <p style="font-size: 0.85em; margin-top: 8px; color: #64748b; letter-spacing: 1px;">DEVELOPED BY BASITH PARAVOOR</p>
+</div>
+
 </div>
 </div>
 
@@ -161,25 +202,23 @@ th { color: #94a3b8; background: rgba(0,0,0,0.2); }
         
         <input type="hidden" id="v_index">
 
-        <!-- Identity Block -->
-        <div class="detail-row" style="background: rgba(255,255,255,0.05); border-left: 4px solid #38bdf8;">
+        <div class="detail-row" style="background: rgba(255,255,255,0.05); border-left: 4px solid var(--primary-color);">
             <p style="margin: 0 0 5px 0;"><span id="v_id" class="badge-id">CUST-0000</span></p>
-            <p class="detail-value"><strong id="v_name" style="color: #38bdf8; font-size: 20px;">-</strong></p>
-            <p class="detail-value" style="font-size: 14px; color: #ccc; margin-top: 5px;">
+            <p class="detail-value"><strong id="v_name" style="color: var(--primary-color); font-size: 1.2em;">-</strong></p>
+            <p class="detail-value" style="font-size: 0.9em; color: #ccc; margin-top: 5px;">
                 <i class="fa fa-phone" style="width: 20px; color: #94a3b8;"></i> <span id="v_mobile">-</span><br>
                 <i class="fa fa-envelope" style="width: 20px; color: #94a3b8;"></i> <span id="v_email">-</span>
             </p>
         </div>
 
-        <!-- Financial & Activity Stats -->
         <div class="form-grid" style="margin-bottom: 15px;">
             <div class="detail-row" style="margin-bottom: 0; border: 1px solid rgba(34, 197, 94, 0.3);">
                 <span class="detail-label" style="color: #22c55e;">Lifetime Value (Revenue)</span>
-                <p class="detail-value" style="font-size: 20px; font-weight: bold;">₹<span id="v_stat_revenue">0.00</span></p>
+                <p class="detail-value" style="font-size: 1.2em; font-weight: bold;">₹<span id="v_stat_revenue">0.00</span></p>
             </div>
             <div class="detail-row" style="margin-bottom: 0;">
                 <span class="detail-label">Total Services Used</span>
-                <p class="detail-value" style="font-size: 20px; font-weight: bold;" id="v_stat_orders">0</p>
+                <p class="detail-value" style="font-size: 1.2em; font-weight: bold;" id="v_stat_orders">0</p>
             </div>
         </div>
 
@@ -199,7 +238,7 @@ th { color: #94a3b8; background: rgba(0,0,0,0.2); }
         </div>
 
         <div style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 25px; padding-top: 20px; text-align: center;">
-            <p style="color: #94a3b8; font-size: 14px; margin-bottom: 15px;">Download this customer's specific transaction history:</p>
+            <p style="color: #94a3b8; font-size: 0.9em; margin-bottom: 15px;">Download this customer's specific transaction history:</p>
             <div style="display: flex; gap: 10px; justify-content: center;">
                 <button class="btn-export btn-csv" onclick="exportSpecificCustomerCSV()"><i class="fa fa-download"></i> History (CSV)</button>
                 <button class="btn-export btn-pdf" onclick="exportSpecificCustomerPDF()"><i class="fa fa-file-invoice"></i> History Statement (PDF)</button>
@@ -212,10 +251,31 @@ th { color: #94a3b8; background: rgba(0,0,0,0.2); }
 <div id="pdfExportContainer"></div>
 
 <script>
-// --- AUTO-ID GENERATOR LOGIC ---
+// --- GLOBAL BRANDING ENGINE ---
+function applyBranding() {
+    let s = JSON.parse(localStorage.getItem("settings")) || {};
+    let bName = s.name || "ClubAd";
+    
+    let sNameEl = document.getElementById("sidebarName");
+    if(sNameEl) sNameEl.innerText = bName;
+    
+    let sLogoEl = document.getElementById("sidebarLogo");
+    if(sLogoEl && s.logo) {
+        sLogoEl.src = s.logo;
+        sLogoEl.style.display = "block";
+    }
+    
+    if(document.title.includes("ClubAd")) {
+        document.title = document.title.replace("ClubAd", bName);
+    }
+
+    document.querySelectorAll(".footer-brand-name").forEach(el => el.innerText = bName);
+    return bName;
+}
+let currentBusinessName = applyBranding();
+
 function generateCustomerId(customersArray) {
     if(!customersArray || customersArray.length === 0) return "CUST-1001";
-    
     let maxId = 1000;
     customersArray.forEach(c => {
         if(c.id && c.id.startsWith("CUST-")) {
@@ -226,10 +286,8 @@ function generateCustomerId(customersArray) {
     return "CUST-" + (maxId + 1);
 }
 
-// --- CORE DATA FUNCTIONS ---
 function getCustomerOrders(customer) {
     let orders = JSON.parse(localStorage.getItem("orders")) || [];
-    // Cross-reference by ID if it exists, otherwise fallback to Name/Mobile for legacy data
     return orders.filter(o => {
         if(o.customerId && customer.id) return o.customerId === customer.id;
         return (o.customerName === customer.name) && (o.customerMobile === customer.mobile || !customer.mobile);
@@ -246,11 +304,9 @@ function getCustomerStats(customer) {
     if (customerOrders.length > 0) {
         lastDate = new Date(customerOrders[0].date).toLocaleDateString();
     }
-
     return { count: customerOrders.length, revenue: totalRevenue, paid: totalPaid, pending: totalPending, lastDate: lastDate, ordersList: customerOrders };
 }
 
-// SAVE CUSTOMER
 function saveCustomer(){
     let customers = JSON.parse(localStorage.getItem("customers")) || [];
     let nameVal = document.getElementById("name").value.trim();
@@ -258,12 +314,10 @@ function saveCustomer(){
 
     let editIndex = document.getElementById("editIndex").value;
     let existingId = document.getElementById("customerIdStr").value;
-    
-    // Assign ID if it's a new entry
     let finalId = existingId ? existingId : generateCustomerId(customers);
 
     let data = {
-        id: finalId, // The new Auto-ID
+        id: finalId, 
         name: nameVal,
         mobile: document.getElementById("mobile").value.trim(),
         email: document.getElementById("email").value.trim(),
@@ -280,7 +334,6 @@ function saveCustomer(){
     loadCustomers();
 }
 
-// LOAD CUSTOMERS
 function loadCustomers(){
     let customers = JSON.parse(localStorage.getItem("customers")) || [];
     let search = document.getElementById("search").value.toLowerCase();
@@ -292,7 +345,6 @@ function loadCustomers(){
         return;
     }
 
-    // Sort newest customers first visually
     let displayArray = customers.map((c, i) => ({...c, originalIndex: i})).reverse();
 
     displayArray.forEach(c => {
@@ -319,10 +371,9 @@ function loadCustomers(){
     });
 }
 
-// EDIT CUSTOMER
 function editCustomer(i){
     let c = JSON.parse(localStorage.getItem("customers"))[i];
-    document.getElementById("customerIdStr").value = c.id || ""; // Retain existing ID
+    document.getElementById("customerIdStr").value = c.id || ""; 
     document.getElementById("name").value = c.name || "";
     document.getElementById("mobile").value = c.mobile || "";
     document.getElementById("email").value = c.email || "";
@@ -333,9 +384,8 @@ function editCustomer(i){
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// DELETE CUSTOMER
 function deleteCustomer(i){
-    if(confirm("Are you sure you want to delete this customer? Their previous orders will remain in reports, but their profile will be removed.")) {
+    if(confirm("Are you sure you want to delete this customer?")) {
         let customers = JSON.parse(localStorage.getItem("customers"));
         customers.splice(i,1);
         localStorage.setItem("customers", JSON.stringify(customers));
@@ -349,7 +399,6 @@ function clearForm(){
     document.getElementById("customerIdStr").value = "";
 }
 
-// --- VIEW CUSTOMER PROFILE MODAL ---
 function openViewModal(i){
     let c = JSON.parse(localStorage.getItem("customers"))[i];
     let stats = getCustomerStats(c);
@@ -368,13 +417,7 @@ function openViewModal(i){
     
     document.getElementById("viewModal").style.display = "flex";
 }
-function closeViewModal() {
-    document.getElementById("viewModal").style.display = "none";
-}
-
-// =====================================================================
-// EXPORT SPECIFIC CUSTOMER HISTORY (FROM MODAL)
-// =====================================================================
+function closeViewModal() { document.getElementById("viewModal").style.display = "none"; }
 
 function exportSpecificCustomerCSV() {
     let index = document.getElementById("v_index").value;
@@ -393,7 +436,6 @@ function exportSpecificCustomerCSV() {
         let balance = total - advance;
         let status = balance <= 0 ? "Paid" : "Pending";
         let mode = o.paymentMode || "N/A";
-
         csv += `"${dateStr}","${sName}",${total},${advance},${balance},"${status}","${mode}"\n`;
     });
 
@@ -402,7 +444,7 @@ function exportSpecificCustomerCSV() {
     let a = document.createElement("a");
     a.href = url;
     let safeName = (customer.name || "Customer").replace(/ /g, "_");
-    a.download = `History_${customer.id || safeName}.csv`;
+    a.download = `${currentBusinessName.replace(/ /g, "_")}_History_${customer.id || safeName}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -415,12 +457,11 @@ function exportSpecificCustomerPDF() {
 
     if (stats.ordersList.length === 0) { alert("This customer has no transaction history to download."); return; }
 
-    let bSettings = JSON.parse(localStorage.getItem("settings")) || {};
-    let bName = bSettings.name || "ClubAd Travels & Online Services";
-
     let container = document.getElementById("pdfExportContainer");
     container.innerHTML = "";
     container.style.display = "block";
+
+    let pColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || "#38bdf8";
 
     let tableRows = "";
     stats.ordersList.forEach(o => {
@@ -444,9 +485,9 @@ function exportSpecificCustomerPDF() {
 
     let htmlString = `
     <div style="padding: 40px; font-family: 'Segoe UI', sans-serif; background: #fff; color: #000; box-sizing: border-box;">
-        <div style="border-bottom: 3px solid #0ea5e9; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end;">
+        <div style="border-bottom: 3px solid ${pColor}; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end;">
             <div>
-                <h1 style="margin: 0; color: #0f172a; font-size: 28px;">${bName}</h1>
+                <h1 style="margin: 0; color: #0f172a; font-size: 28px;">${currentBusinessName}</h1>
                 <p style="margin: 5px 0 0 0; color: #64748b; font-size: 16px;">Statement of Account / Transaction History</p>
             </div>
             <div style="text-align: right;">
@@ -476,7 +517,7 @@ function exportSpecificCustomerPDF() {
             </div>
         </div>
 
-        <h3 style="color: #0ea5e9; margin-bottom: 15px;">Transaction History</h3>
+        <h3 style="color: ${pColor}; margin-bottom: 15px;">Transaction History</h3>
         <table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left;">
             <thead>
                 <tr style="background: #f1f5f9;">
@@ -495,9 +536,11 @@ function exportSpecificCustomerPDF() {
     container.innerHTML = htmlString;
 
     let safeName = (customer.id || customer.name || "Customer").replace(/ /g, "_");
+    let safeBiz = currentBusinessName.replace(/ /g, "_");
+    
     let opt = {
         margin:       [0.5, 0.5, 0.5, 0.5],
-        filename:     `Account_Statement_${safeName}.pdf`,
+        filename:     `${safeBiz}_Statement_${safeName}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2 },
         jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
@@ -509,10 +552,6 @@ function exportSpecificCustomerPDF() {
         container.innerHTML = "";
     });
 }
-
-// =====================================================================
-// EXPORT ALL CUSTOMER DATABASE (GLOBAL)
-// =====================================================================
 
 function exportDatabaseCSV(){
     let customers = JSON.parse(localStorage.getItem("customers")) || [];
@@ -537,7 +576,7 @@ function exportDatabaseCSV(){
     let url = URL.createObjectURL(blob);
     let a = document.createElement("a");
     a.href = url;
-    a.download = "ClubAd_Customer_Database.csv";
+    a.download = `${currentBusinessName.replace(/ /g, "_")}_Customer_Database.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -547,12 +586,11 @@ function generateAllPDFCards(){
     let customers = JSON.parse(localStorage.getItem("customers")) || [];
     if(customers.length === 0) { alert("No customers to export."); return; }
     
-    let businessSettings = JSON.parse(localStorage.getItem("settings")) || {};
-    let bName = businessSettings.name || "ClubAd Travels & Online Services";
-
     let container = document.getElementById("pdfExportContainer");
     container.innerHTML = ""; 
     container.style.display = "block";
+
+    let pColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || "#38bdf8";
 
     let htmlString = "";
     
@@ -562,13 +600,13 @@ function generateAllPDFCards(){
         
         htmlString += `
         <div class="${pageBreakClass}" style="padding: 40px; font-family: 'Segoe UI', sans-serif; background: #fff; color: #000; min-height: 1000px; box-sizing: border-box;">
-            <div style="border-bottom: 2px solid #0ea5e9; padding-bottom: 20px; margin-bottom: 30px; text-align: center;">
-                <h1 style="margin: 0; color: #0f172a; font-size: 28px;">${bName}</h1>
+            <div style="border-bottom: 2px solid ${pColor}; padding-bottom: 20px; margin-bottom: 30px; text-align: center;">
+                <h1 style="margin: 0; color: #0f172a; font-size: 28px;">${currentBusinessName}</h1>
                 <p style="margin: 5px 0 0 0; color: #64748b; font-size: 16px;">Customer Dossier & Profile</p>
             </div>
-            <div style="background: #f8fafc; padding: 25px; border-left: 5px solid #0ea5e9; border-radius: 8px; margin-bottom: 30px; position: relative;">
+            <div style="background: #f8fafc; padding: 25px; border-left: 5px solid ${pColor}; border-radius: 8px; margin-bottom: 30px; position: relative;">
                 <span style="position: absolute; top: 20px; right: 20px; background: #e0f2fe; color: #0369a1; padding: 5px 10px; border-radius: 6px; font-size: 14px; font-weight: bold;">${c.id || "CUST-LEGACY"}</span>
-                <h2 style="margin: 0; color: #0ea5e9; font-size: 26px;">${c.name || "Unnamed Customer"}</h2>
+                <h2 style="margin: 0; color: ${pColor}; font-size: 26px;">${c.name || "Unnamed Customer"}</h2>
                 <div style="margin-top: 15px; font-size: 14px; color: #334155;">
                     <p style="margin: 5px 0;"><strong>Mobile:</strong> ${c.mobile || "Not Provided"}</p>
                     <p style="margin: 5px 0;"><strong>Email:</strong> ${c.email || "Not Provided"}</p>
@@ -605,7 +643,7 @@ function generateAllPDFCards(){
 
     let opt = {
         margin:       0,
-        filename:     'ClubAd_Customer_Database_Profiles.pdf',
+        filename:     `${currentBusinessName.replace(/ /g, "_")}_Customer_Profiles.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2 },
         jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
@@ -617,7 +655,6 @@ function generateAllPDFCards(){
     });
 }
 
-// INIT
 loadCustomers();
 </script>
 
